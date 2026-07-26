@@ -57,7 +57,10 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 ### 4. Spawn both sub-agents in parallel
 
-Send a single message with two `Agent` tool calls. Use the `general-purpose` subagent for both.
+Execute both review axes in parallel background sub-agents so neither pollutes the other's context:
+
+- **In Antigravity (`agy`)**: Call `invoke_subagent` twice in a single tool call (using `TypeName: "research"`, `TypeName: "self"`, or generic subagent type).
+- **In Claude Code / Other Harnesses**: Use the `Agent` tool or equivalent subagent tool twice in a single message.
 
 **Standards sub-agent prompt** — include:
 
@@ -75,7 +78,9 @@ If the spec is missing, skip the Spec sub-agent and note this in the final repor
 
 ### 5. Aggregate
 
-Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the two axes are deliberately separate (see _Why two axes_).
+Present the two reports under `## Standards` and `## Spec` headings in a clean Markdown report (saving to a native Artifact document when supported by the harness). Do **not** merge or rerank findings — the two axes are deliberately separate (see _Why two axes_).
+
+Highlight hard violations vs. baseline smells using distinct callouts (`> [!WARNING]` for documented standard violations, `> [!NOTE]` for baseline Fowler smells).
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
 
