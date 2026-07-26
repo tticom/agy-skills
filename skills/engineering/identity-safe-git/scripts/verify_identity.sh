@@ -57,13 +57,20 @@ remote_login=$(gh api user --jq .login 2>/dev/null) ||
 [[ "$remote_login" == "$host_login" ]] ||
   fail "Git host login is '$remote_login', expected '$host_login'"
 
-actual_name=$(git config --get user.name || true)
-[[ "$actual_name" == "$git_name" ]] ||
-  fail "Git author name is '$actual_name', expected '$git_name'"
+local_name=$(git config --local --get user.name || true)
+local_email=$(git config --local --get user.email || true)
+[[ -z "$local_name" ]] ||
+  fail "repository-local Git author name override is set"
+[[ -z "$local_email" ]] ||
+  fail "repository-local Git author email override is set"
 
-actual_email=$(git config --get user.email || true)
+actual_name=$(git config --global --get user.name || true)
+[[ "$actual_name" == "$git_name" ]] ||
+  fail "global Git author name is '$actual_name', expected '$git_name'"
+
+actual_email=$(git config --global --get user.email || true)
 [[ "$actual_email" == "$git_email" ]] ||
-  fail "Git author email is '$actual_email', expected '$git_email'"
+  fail "global Git author email is '$actual_email', expected '$git_email'"
 
 branch=$(git branch --show-current)
 head=$(git rev-parse HEAD)

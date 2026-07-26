@@ -27,7 +27,8 @@ scripts/verify_identity.sh \
 ```
 
 Use the copy bundled with this skill. Record its result. Any mismatch is a
-no-write stop.
+no-write stop. Require the expected global commit identity and reject
+repository-local `user.name` or `user.email` overrides.
 
 ## Apply operation rules
 
