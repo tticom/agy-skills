@@ -29,6 +29,14 @@ The route most work travels. You have an idea and want it built.
 
 Keep steps 1–3 in **one unbroken context window** — don't compact or clear until after `/to-tickets` — so the grilling, spec, and tickets all build on the same thinking. Each `/implement` then starts fresh, working from the ticket.
 
+### Governed projects
+
+When a project has an active-task pointer, fixed authorised paths, separate
+author/reviewer identities, or one-PR-at-a-time policy, use
+**`/governed-development-loop`** instead of `/implement`. It composes
+`/identity-safe-git`, `/durable-handoff`, and `/code-review` while leaving
+project-specific evidence and merge policy in the project's profile.
+
 The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**: the window (~120k tokens on state-of-the-art models) within which the model still reasons sharply. If a session approaches it before `/to-tickets`, don't push on degraded — `/handoff` and continue in a fresh thread.
 
 ## On-ramps
@@ -61,6 +69,8 @@ Two model-invoked references that run *beneath* the other skills — each the si
 ## Crossing sessions
 
 - **`/handoff`** — when a thread is full or you need to branch off (e.g. into a `/prototype` session), this compacts the conversation into a markdown file. You don't continue in place — you **open a new session and reference that file** to carry the context across. It's the bridge between context windows, in either direction. Use it when you want a **fresh session** but need the **current conversation preserved**.
+- **`/durable-handoff`** — when task state must survive in a governance or
+  operations repository, pin it to live revisions and evidence instead.
 - **`/compact`** (built-in) — stay in the **same conversation**, letting the earlier turns be summarized. Use it at **intentional breaks between phases**, when you don't mind losing the verbatim history. Don't compact mid-phase — the agent can lose its way. `/handoff` forks; `/compact` continues.
 
 ## Standalone
