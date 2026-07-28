@@ -73,5 +73,16 @@ After a maintainer reports a merge:
 4. otherwise prepare the smallest governance proposal and stop before product
    implementation.
 
+## Consume review state
+
+When a PR is open, query formal reviews as well as issue comments. Resolve the
+latest non-dismissed review by the assigned reviewer on the exact live head;
+that verdict governs. A later changes-requested review supersedes an earlier
+approval on the same head.
+
+Never treat an author handback comment as proof that review is pending when a
+current-head changes-requested verdict exists. Repeated execution with
+unchanged remote state must be idempotent and must not create another task.
+
 Read [project-profile.md](references/project-profile.md) when creating or
 reviewing a project profile.

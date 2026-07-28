@@ -12,6 +12,8 @@ Review the diff between `HEAD` and a fixed point along three independent axes:
 Run the axes in separate parallel sub-agents, then independently verify every blocking finding and every fact used to approve. Delegation gathers evidence; it does not transfer reviewer responsibility.
 
 Read [references/evidence-falsification.md](references/evidence-falsification.md) completely before reviewing tests, empirical claims, generated artifacts, geometry/threshold logic, parsers, matching algorithms, or a live pull request.
+Read [references/review-state-protocol.md](references/review-state-protocol.md)
+before consuming or publishing live PR review state.
 
 ## Process
 
@@ -211,3 +213,8 @@ End with one verdict:
 - `CANNOT_VERIFY`
 
 Never publish, approve, merge, or change a pull request unless the user or governing workflow authorizes that action.
+
+When publication is authorized, publish the formal hosting-service verdict
+before reporting a machine-actionable state. Re-query the review timeline and
+prove the verdict exists on the exact head. A local task update, chat response,
+or issue comment is not a substitute for a formal review.
