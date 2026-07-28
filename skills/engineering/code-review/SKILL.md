@@ -1,94 +1,192 @@
 ---
 name: code-review
-description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/PRD asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
+description: Review a branch, pull request, or work-in-progress diff against a fixed point along three independent axes — Standards, Spec, and Evidence/Falsification. Use when the user asks to review code or a PR, review since a commit, validate an implementation claim, or decide whether work is ready to merge. Treat summaries and green tests as untrusted claims; trace material claims through production code and discriminating tests before approval.
 ---
 
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Review the diff between `HEAD` and a fixed point along three independent axes:
 
-- **Standards** — does the code conform to this repo's documented coding standards?
-- **Spec** — does the code faithfully implement the originating issue / PRD / spec?
+- **Standards** — does the code follow documented repository standards?
+- **Spec** — does it implement the originating requirement without scope creep?
+- **Evidence/Falsification** — could the supplied tests and artifacts distinguish the claimed behavior from a plausible broken implementation?
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+Run the axes in separate parallel sub-agents, then independently verify every blocking finding and every fact used to approve. Delegation gathers evidence; it does not transfer reviewer responsibility.
 
-The issue tracker should have been provided to you — run `/setup-matt-pocock-skills` if `docs/agents/issue-tracker.md` is missing.
+Read [references/evidence-falsification.md](references/evidence-falsification.md) completely before reviewing tests, empirical claims, generated artifacts, geometry/threshold logic, parsers, matching algorithms, or a live pull request.
 
 ## Process
 
-### 1. Pin the fixed point
+### 1. Pin the reviewed state
 
-Whatever the user said is the fixed point — a commit SHA, branch name, tag, `main`, `HEAD~5`, etc. If they didn't specify one, ask for it.
+Resolve the fixed point supplied by the user. If absent, ask for it.
 
-Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
+Capture once:
 
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here — not inside two parallel sub-agents.
+```bash
+git rev-parse <fixed-point>
+git rev-parse HEAD
+git diff <fixed-point>...HEAD
+git log <fixed-point>..HEAD --oneline
+```
 
-### 2. Identify the spec source
+Fail on a bad ref or empty diff.
 
-Look for the originating spec, in this order:
+For a live pull request, also query the hosting service immediately before review:
 
-1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.) — fetch via the workflow in `docs/agents/issue-tracker.md`.
-2. A path the user passed as an argument.
-3. A PRD/spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
-4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+- live head object ID;
+- base object ID;
+- changed paths;
+- current review threads and comments;
+- latest author handback/evidence comment when the project requires one.
 
-### 3. Identify the standards sources
+If a project requires an exact-head handback, compare the parsed full SHA to the live head using exact string equality. Missing, abbreviated, stale, or unparsable values stop the review. A PR body, chat summary, local branch, or earlier review is not a substitute.
 
-Anything in the repo that documents how code should be written, such as `CODING_STANDARDS.md` or `CONTRIBUTING.md`.
+Re-query the live head before publishing the verdict. If it changed, discard the verdict and restart at the new head.
 
-On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below — a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
+### 2. Identify authority sources
 
-- **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
-- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation — and, like any standard here, skip anything tooling already enforces.
+Find the originating spec in this order:
 
-Each smell reads *what it is* → *how to fix*; match it against the diff:
+1. issue references in commits;
+2. a user-supplied path;
+3. the PR body or linked issue;
+4. matching files under `docs/`, `specs/`, or `.scratch/`.
 
-- **Mysterious Name** — a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design's murky.
-- **Duplicated Code** — the same logic shape appears in more than one hunk or file in the change. → extract the shared shape, call it from both.
-- **Feature Envy** — a method that reaches into another object's data more than its own. → move the method onto the data it envies.
-- **Data Clumps** — the same few fields or params keep travelling together (a type wanting to be born). → bundle them into one type, pass that.
-- **Primitive Obsession** — a primitive or string standing in for a domain concept that deserves its own type. → give the concept its own small type.
-- **Repeated Switches** — the same `switch`/`if`-cascade on the same type recurs across the change. → replace with polymorphism, or one map both sites share.
-- **Shotgun Surgery** — one logical change forces scattered edits across many files in the diff. → gather what changes together into one module.
-- **Divergent Change** — one file or module is edited for several unrelated reasons. → split so each module changes for one reason.
-- **Speculative Generality** — abstraction, parameters, or hooks added for needs the spec doesn't have. → delete it; inline back until a real need shows.
-- **Message Chains** — long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
-- **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
-- **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
+Use `docs/agents/issue-tracker.md` when present. If no spec exists, report that limitation; never invent requirements.
 
-### 4. Spawn both sub-agents in parallel
+Find repository standards such as `AGENTS.md`, `CONTRIBUTING.md`, coding standards, review rules, evidence contracts, and active-task scope. Project rules override this reusable skill when stricter.
 
-Execute both review axes in parallel background sub-agents so neither pollutes the other's context:
+### 3. Build the claim ledger
 
-- **In Antigravity (`agy`)**: Call `invoke_subagent` twice in a single tool call (using `TypeName: "research"`, `TypeName: "self"`, or generic subagent type).
-- **In Claude Code / Other Harnesses**: Use the `Agent` tool or equivalent subagent tool twice in a single message.
+Before reading conclusions from tests, list each material claim made by the spec, PR body, handback, or implementation. At minimum include claims about:
 
-**Standards sub-agent prompt** — include:
+- changed behavior and failure behavior;
+- dynamic or end-to-end data flow;
+- ambiguity, absence, fallback, or conflict handling;
+- boundary, scale, ordering, deduplication, and idempotence;
+- regression safety and full-suite validation;
+- changed-path scope and exact reviewed revision.
 
-- The full diff command and commit list.
-- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full — the sub-agent has no other access to it.
-- The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
+For every claim record:
 
-**Spec sub-agent prompt** — include:
+| Claim | Production path | Evidence path | Strongest false-success mutation | Status |
+|---|---|---|---|---|
+| exact behavior asserted | function/module reached | test/artifact/assertion | smallest broken implementation that might still pass | verified / contradicted / cannot verify |
 
-- The diff command and commit list.
-- The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+Do not mark a claim verified from a test name, comment, aggregate count, snapshot existence, or agent summary.
 
-If the spec is missing, skip the Spec sub-agent and note this in the final report.
+### 4. Run the assertion-smell scan
 
-### 5. Aggregate
+Run:
 
-Present the two reports under `## Standards` and `## Spec` headings in a clean Markdown report (saving to a native Artifact document when supported by the harness). Do **not** merge or rerank findings — the two axes are deliberately separate (see _Why two axes_).
+```bash
+python skills/engineering/code-review/scripts/assertion_smells.py <changed-test-path> [...]
+```
 
-Highlight hard violations vs. baseline smells using distinct callouts (`> [!WARNING]` for documented standard violations, `> [!NOTE]` for baseline Fowler smells).
+Treat output as review leads, not automatic findings. Inspect every reported assertion in context. The scanner cannot prove semantic adequacy and a clean scan cannot justify approval.
 
-End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
+### 5. Spawn three independent review axes
 
-## Why two axes
+Run all applicable axes in parallel. Give each sub-agent the pinned diff command, commit list, changed paths, and only its relevant authority/evidence inputs.
 
-A change can pass one axis and fail the other:
+#### Standards brief
 
-- Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
-- Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
+Report documented-standard violations with rule citations and baseline smells with quoted hunks. Repository standards override the smell baseline. Skip rules already enforced by tooling.
 
-Reporting them separately stops one axis from masking the other.
+Use this smell baseline as judgement-call prompts:
+
+- Mysterious Name
+- Duplicated Code
+- Feature Envy
+- Data Clumps
+- Primitive Obsession
+- Repeated Switches
+- Shotgun Surgery
+- Divergent Change
+- Speculative Generality
+- Message Chains
+- Middle Man
+- Refused Bequest
+
+#### Spec brief
+
+Report:
+
+- missing or partial requirements;
+- behavior not requested;
+- requirements that look implemented but are semantically wrong.
+
+Quote the governing requirement for each finding.
+
+#### Evidence/Falsification brief
+
+Give the sub-agent the claim ledger, changed implementation and tests, validation evidence, and [references/evidence-falsification.md](references/evidence-falsification.md). Ask it to:
+
+1. trace each claim through the changed production path to an exact assertion or inspected artifact;
+2. propose the smallest plausible broken mutation;
+3. decide whether the existing evidence would fail under that mutation;
+4. identify hardcoded substitutes for claimed dynamic inputs;
+5. inspect absence, ambiguity, conflict, ordering, duplicate, boundary, scale, and negative-control behavior when relevant;
+6. report unsupported handback or PR claims;
+7. return `verified`, `contradicted`, or `cannot verify` per claim.
+
+No claim may pass solely because tests are green.
+
+### 6. Perform the primary-reviewer challenge
+
+After sub-agents return, inspect the raw diff yourself.
+
+For each proposed approval fact and each P0/P1 finding:
+
+- locate the exact production branch;
+- locate the exact test input and assertion;
+- check whether the assertion is discriminating;
+- check whether the test reaches changed production code;
+- check whether claimed dynamic inputs are actually derived rather than hardcoded later;
+- check at least one false-success mutation mentally or by a safe local mutation/test when practical.
+
+Reject assertions that permit both material outcomes, such as `assert failure or success`, unless both outcomes are explicitly equivalent under the spec.
+
+For thresholds, verify both sides with geometry/data that depends on the threshold. An “inside” sample that already overlaps without tolerance does not test tolerance.
+
+For collection logic, check permutation invariance, duplicate handling, competition, and global assignment rather than only isolated elements.
+
+### 7. Gate the verdict
+
+Approval is allowed only when:
+
+- Standards has no blocking violation;
+- Spec has no missing or incorrect requirement;
+- every material claim in Evidence/Falsification is `verified`;
+- required negative controls and false-success disconfirmation are present;
+- exact-head and scope evidence are coherent;
+- unresolved relevant review threads are dispositioned.
+
+Use `cannot verify` when evidence is unavailable. Use `changes requested` when evidence contradicts claims or implementation is wrong. Do not convert uncertainty into approval.
+
+Before approval, write one sentence naming the strongest plausible false-success mode and the exact check that ruled it out. If that sentence cannot be written with concrete evidence, do not approve.
+
+### 8. Report
+
+Report findings first, ordered by severity, with file/hunk references and the violated requirement or unsupported claim.
+
+Then present:
+
+## Standards
+
+Hard violations and labelled judgement-call smells.
+
+## Spec
+
+Missing, extra, or incorrect behavior with requirement citations.
+
+## Evidence/Falsification
+
+The completed claim ledger, disconfirmation attempts, contradictions, and residual uncertainty.
+
+End with one verdict:
+
+- `APPROVE`
+- `CHANGES_REQUESTED`
+- `CANNOT_VERIFY`
+
+Never publish, approve, merge, or change a pull request unless the user or governing workflow authorizes that action.

@@ -1,3 +1,4 @@
 interface:
   display_name: "Code Review"
-  short_description: "Review a diff on standards and spec"
+  short_description: "Review standards, spec, and falsification evidence"
+  default_prompt: "Use $code-review to review this change and test whether its evidence can falsify plausible broken implementations."
