@@ -26,6 +26,11 @@ Read live state rather than copying an agent summary:
 If local and remote heads differ, label the work unpublished and do not claim
 the PR represents it.
 
+For review state, record the latest non-dismissed formal review on the exact
+live head, including review ID, reviewer, state, commit ID, and server
+timestamp. Keep author handbacks separate from formal verdicts. Do not let an
+older approval override a later changes-requested review on the same head.
+
 ## Write a compact record
 
 Include purpose and outcome, exact repository revisions including the skills
