@@ -40,7 +40,27 @@ For a live pull request, also query the hosting service immediately before revie
 
 If a project requires an exact-head handback, compare the parsed full SHA to the live head using exact string equality. Missing, abbreviated, stale, or unparsable values stop the review. A PR body, chat summary, local branch, or earlier review is not a substitute.
 
-Re-query the live head before publishing the verdict. If it changed, discard the verdict and restart at the new head.
+Then materialize the exact live head before inspecting any diff:
+
+1. fetch the live head object without merging it into an existing task branch;
+2. check it out detached or in a dedicated review worktree;
+3. require `git rev-parse HEAD` to equal the full live head object ID exactly;
+4. compute the review diff as `<base-object-id>...<live-head-object-id>`, never as `<fixed-point>...HEAD` until equality has been proved.
+
+Fail closed if the object cannot be fetched, checked out, or matched. A local
+branch name that matches the PR branch is insufficient.
+
+Re-query the live head before publishing the verdict and re-run:
+
+```bash
+python skills/engineering/code-review/scripts/verify_review_head.py \
+  --expected <re-queried-live-head-object-id> \
+  --worktree <review-worktree>
+```
+
+Approval requires all three full SHAs to be identical: initial live head,
+reviewed local `HEAD`, and final live head. If any differ, discard the verdict
+and restart at the new head.
 
 ### 2. Identify authority sources
 
@@ -159,6 +179,7 @@ Approval is allowed only when:
 - every material claim in Evidence/Falsification is `verified`;
 - required negative controls and false-success disconfirmation are present;
 - exact-head and scope evidence are coherent;
+- initial live head, reviewed local `HEAD`, and final live head are exactly equal;
 - unresolved relevant review threads are dispositioned.
 
 Use `cannot verify` when evidence is unavailable. Use `changes requested` when evidence contradicts claims or implementation is wrong. Do not convert uncertainty into approval.
