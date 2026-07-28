@@ -117,6 +117,7 @@ For a live review, bind evidence to the exact reviewed head.
 Check:
 
 - full, exact head object ID;
+- exact equality between initial live head, reviewed local `HEAD`, and final live head;
 - command and executable;
 - test collection count;
 - pass/skip/fail count;
