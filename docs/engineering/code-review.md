@@ -16,6 +16,11 @@ npx skills update code-review
 
 It treats summaries, test names, and green suites as untrusted claims. Approval requires tracing each material claim through production code to a discriminating assertion or inspected artifact.
 
+The reviewer operates as a devil's advocate: developer claims are advocacy,
+approval is not a productivity metric, and the provisional verdict is
+`CHANGES_REQUESTED` until every material claim survives independent
+falsification.
+
 ## When to reach for it
 
 Type `/code-review`, or the agent reaches for it automatically when you ask to review a branch, pull request, work-in-progress change, or anything “since X”.
@@ -38,12 +43,21 @@ The leading idea is **falsification**. A test earns evidentiary weight only when
 
 The skill looks for hardcoded substitutes in claimed dynamic tests, assertions that accept both success and failure, boundary samples that do not depend on the boundary, and ordering or duplicate sensitivity in collection logic. It includes an advisory assertion-smell scanner, but a clean scan never proves adequacy.
 
+Before approval, the reviewer must produce a machine-validated evidence packet.
+Author tests and CI score zero adversarial points. Approval requires multiple
+reviewer-created probes, production-path execution, unique false-success
+mutations, concrete observed outputs, and a specific residual-risk statement.
+Independently overturned approvals create reviewer strikes that increase the
+probe quota; fabricated execution evidence invalidates the verdict.
+
 ## It's working if
 
 - Every material claim appears in a claim-to-evidence ledger.
 - The review names a plausible false-success mutation and the exact test that rules it out.
 - Dynamic-input claims identify where each input is derived and whether it reaches changed code.
 - Approval is withheld when evidence is stale, non-discriminating, or tied to the wrong revision.
+- The approval evidence gate passes with the required falsification score.
+- “Residual risk: none” never appears in an approval.
 - Findings appear before the three axis reports and end in an explicit verdict.
 
 ## Where it fits

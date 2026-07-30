@@ -11,6 +11,28 @@ Review the diff between `HEAD` and a fixed point along three independent axes:
 
 Run the axes in separate parallel sub-agents, then independently verify every blocking finding and every fact used to approve. Delegation gathers evidence; it does not transfer reviewer responsibility.
 
+## Devil's advocate contract
+
+Assume every developer, PR, handback, test name, and green check is an
+unverified advocacy document. Your job is not to confirm it. Your job is to
+find the smallest realistic way it could be false.
+
+- Begin with the provisional verdict `CHANGES_REQUESTED`.
+- Make the implementation earn its way out claim by claim.
+- Treat a test that reconstructs desired inputs below the claimed boundary as
+  evidence of that helper only, never of the upstream pipeline.
+- Treat “end-to-end”, “full corpus”, “no leakage”, “100%”, and “no residual
+  risk” as hostile claims requiring direct disconfirmation.
+- Never repeat a claimed probe unless you personally ran it and can report the
+  concrete input and observed differentiator.
+- Prefer one real counterexample over ten confirmations.
+
+The reviewer's success metric is accuracy, not approval throughput. Finding a
+valid blocker before merge is positive progress. An approval later overturned
+by independent evidence is a reviewer strike; each active strike raises the
+minimum probe quota. Fabricated, inferred, or unreproducible “executed”
+evidence invalidates the verdict and counts as two strikes.
+
 Read [references/evidence-falsification.md](references/evidence-falsification.md) completely before reviewing tests, empirical claims, generated artifacts, geometry/threshold logic, parsers, matching algorithms, or a live pull request.
 Read [references/review-state-protocol.md](references/review-state-protocol.md)
 before consuming or publishing live PR review state.
@@ -106,6 +128,23 @@ python skills/engineering/code-review/scripts/assertion_smells.py <changed-test-
 
 Treat output as review leads, not automatic findings. Inspect every reported assertion in context. The scanner cannot prove semantic adequacy and a clean scan cannot justify approval.
 
+### 4a. Set the falsification quota
+
+Determine the active reviewer-strike count from the project scorecard. If the
+project has no scorecard, use zero and report that accountability is not yet
+persistent.
+
+Minimum reviewer-created probes:
+
+- ordinary review: 2;
+- timing, grouping, parser, privacy, fail-closed, or end-to-end claims: 3;
+- add 1 for each active strike, capped at 2 additional probes.
+
+Author-authored tests, CI, linters, schema export, and `agent_verify.py` score
+zero adversarial points. A reviewer-created probe scores 2 only when it has a
+unique false-success mutation, runs the claimed production boundary, records
+the exact command/input/output, and kills or exposes that mutation.
+
 ### 5. Spawn three independent review axes
 
 Run all applicable axes in parallel. Give each sub-agent the pinned diff command, commit list, changed paths, and only its relevant authority/evidence inputs.
@@ -188,6 +227,21 @@ Use `cannot verify` when evidence is unavailable. Use `changes requested` when e
 
 Before approval, write one sentence naming the strongest plausible false-success mode and the exact check that ruled it out. If that sentence cannot be written with concrete evidence, do not approve.
 
+Before publishing `APPROVE`, create a JSON evidence packet using the schema in
+[references/evidence-falsification.md](references/evidence-falsification.md)
+and run:
+
+```bash
+python skills/engineering/code-review/scripts/review_evidence_gate.py \
+  review-evidence.json \
+  --prior-overturns <active-strikes> \
+  [--high-risk]
+```
+
+The command must print `APPROVAL_EVIDENCE_GATE=PASS`. Any failure forces
+`CHANGES_REQUESTED` or `CANNOT_VERIFY`. Do not weaken the packet, relabel an
+author test as reviewer-created, or omit a material claim to pass the gate.
+
 ### 8. Report
 
 Report findings first, ordered by severity, with file/hunk references and the violated requirement or unsupported claim.
@@ -205,6 +259,9 @@ Missing, extra, or incorrect behavior with requirement citations.
 ## Evidence/Falsification
 
 The completed claim ledger, disconfirmation attempts, contradictions, and residual uncertainty.
+
+Include the validator's required probe count, achieved falsification score,
+active strike count, and evidence-integrity attestation.
 
 End with one verdict:
 

@@ -12,6 +12,7 @@ Use this protocol to decide whether evidence can support a review claim. Its pur
 6. Collections and matching
 7. Validation provenance
 8. Approval questions
+9. Reviewer incentives and evidence packet
 
 ## 1. Claim tracing
 
@@ -140,3 +141,59 @@ Before approval answer all of these with concrete locations:
 7. Does the durable evidence pin the live reviewed state?
 
 Any unsupported material answer blocks approval.
+
+## 9. Reviewer incentives and evidence packet
+
+Approval is the costliest verdict because it transfers risk to the maintainer.
+Do not reward approval volume. Reward independently falsified claims and
+reproducible counterexamples.
+
+An approval packet has this shape:
+
+```json
+{
+  "verdict": "APPROVE",
+  "claims": [
+    {
+      "claim": "public PDF reaches duration extraction and GP output",
+      "status": "verified",
+      "production_path": "pdf input -> extractor -> TabRaw -> ScoreIR -> GP",
+      "evidence_path": "reviewer probe e2e-public-pdf",
+      "false_success_mutation": "bypass extraction and inject duration metadata"
+    }
+  ],
+  "probes": [
+    {
+      "name": "e2e-public-pdf",
+      "reviewer_created": true,
+      "author_test_only": false,
+      "production_path": true,
+      "command": "exact runnable command",
+      "input": "exact fixture or constructed counterexample",
+      "false_success_mutation": "one plausible broken behavior",
+      "observed_output": "concrete value that distinguishes outcomes",
+      "invariant": "what must remain true",
+      "result": "killed"
+    }
+  ],
+  "residual_risks": ["specific untested behavior and why it remains"],
+  "integrity_attestation": "I personally ran every listed probe against the pinned review head and recorded observed output without inference."
+}
+```
+
+Rules:
+
+- every material claim must appear and be `verified` for approval;
+- probes must be reviewer-created and must not be author-test-only;
+- commands and false-success mutations must be unique;
+- at least one probe must cross the production boundary; high-risk reviews
+  require two;
+- `residual_risks` must be non-empty and specific; “none”, “zero”, and
+  equivalents are forbidden;
+- a rerun of the developer's tests is baseline validation, not a probe;
+- a claimed execution without a reproducible receipt invalidates the review.
+
+Projects should keep a reviewer scorecard. An independently overturned approval
+adds one strike for the next five reviews. Evidence fabrication adds two.
+Each strike raises the approval probe quota by one, capped at two. Five
+subsequent reviews without an overturned approval clear one strike.
