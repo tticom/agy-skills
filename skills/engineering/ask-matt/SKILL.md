@@ -37,6 +37,11 @@ author/reviewer identities, or one-PR-at-a-time policy, use
 `/identity-safe-git`, `/durable-handoff`, and `/code-review` while leaving
 project-specific evidence and merge policy in the project's profile.
 
+When the work is to create or revise that active-task pointer, role prompt, or
+promotion record, use **`/governance-author`** first. It selects the repository
+that owns the durable output, separates a candidate from executable authority,
+and stops the governance author before the authorised product role begins.
+
 The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**: the window (~120k tokens on state-of-the-art models) within which the model still reasons sharply. If a session approaches it before `/to-tickets`, don't push on degraded — `/handoff` and continue in a fresh thread.
 
 ## On-ramps
