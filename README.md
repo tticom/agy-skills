@@ -196,6 +196,7 @@ Skills I use daily for code work.
 - **[codebase-design](./skills/engineering/codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface.
 - **[code-review](./skills/engineering/code-review/SKILL.md)** — Three-axis review of a pinned diff: **Standards**, **Spec**, and **Evidence/Falsification**, with claim tracing and false-success challenges before approval.
 - **[governed-development-loop](./skills/engineering/governed-development-loop/SKILL.md)** — Execute one authorised, review-gated task from pinned state to an independently reviewable remote head.
+- **[governance-author](./skills/engineering/governance-author/SKILL.md)** — Turn a maintainer decision into a bounded governance promotion without repository-ownership drift or role self-promotion.
 - **[identity-safe-git](./skills/engineering/identity-safe-git/SKILL.md)** — Verify OS, Git-host, author, workspace, and branch identity before repository mutations.
 - **[resolving-merge-conflicts](./skills/engineering/resolving-merge-conflicts/SKILL.md)** — Work through an in-progress git merge or rebase conflict hunk by hunk, resolving by intent traced to each side's primary source, then finish the operation — never `--abort`.
 
