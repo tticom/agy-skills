@@ -153,6 +153,9 @@ An approval packet has this shape:
 ```json
 {
   "verdict": "APPROVE",
+  "review_head": "0123456789abcdef0123456789abcdef01234567",
+  "prior_review_head": null,
+  "head_delta_claims": [{"id": "delta-1", "changed_path": "src/example.py", "changed_hunk": "parse width and provenance", "risk": "pen width confused with geometry width"}],
   "claims": [
     {
       "claim": "public PDF reaches duration extraction and GP output",
@@ -173,9 +176,14 @@ An approval packet has this shape:
       "false_success_mutation": "one plausible broken behavior",
       "observed_output": "concrete value that distinguishes outcomes",
       "invariant": "what must remain true",
-      "result": "killed"
+      "result": "killed",
+      "executed_head": "0123456789abcdef0123456789abcdef01234567",
+      "fresh_execution": true,
+      "execution_receipt": "sha256:new-captured-probe-output",
+      "targets_delta_claims": ["delta-1"]
     }
   ],
+  "test_evidence": [{"test_node": "tests/test_example.py::test_width", "input_control": "20pt rectangle with 1pt pen", "production_boundary": "extract -> classify", "assertion": "candidate rejected", "claim": "geometry width controls rejection", "inspected_head": "0123456789abcdef0123456789abcdef01234567"}],
   "residual_risks": ["specific untested behavior and why it remains"],
   "integrity_attestation": "I personally ran every listed probe against the pinned review head and recorded observed output without inference."
 }
@@ -192,6 +200,12 @@ Rules:
   equivalents are forbidden;
 - a rerun of the developer's tests is baseline validation, not a probe;
 - a claimed execution without a reproducible receipt invalidates the review.
+- a re-review must name the prior head and pass its packet to the gate; prior
+  receipts, output hashes, test inventories, and approval prose are historical;
+- every changed-head claim requires a fresh exact-head reviewer probe;
+- every cited test requires inspected input, production call, and assertion;
+- library field names do not prove semantics; units, provenance, and
+  one-source-to-many expansion require a direct API or source probe.
 
 Projects should keep a reviewer scorecard. An independently overturned approval
 adds one strike for the next five reviews. Evidence fabrication adds two.

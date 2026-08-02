@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -13,15 +14,52 @@ class EvidenceError(ValueError):
     pass
 
 
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+
+
 def text(value: Any, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise EvidenceError(f"{field} must be non-empty text")
     return value.strip()
 
 
-def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool) -> tuple[int, int]:
+def full_sha(value: Any, field: str) -> str:
+    candidate = text(value, field)
+    if not FULL_SHA.fullmatch(candidate):
+        raise EvidenceError(f"{field} must be a full lowercase 40-character SHA")
+    return candidate
+
+
+def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
+             expected_head: str, prior_packet: dict[str, Any] | None = None) -> tuple[int, int]:
     if packet.get("verdict") != "APPROVE":
         raise EvidenceError("gate is only valid for verdict APPROVE")
+
+    review_head = full_sha(packet.get("review_head"), "review_head")
+    if review_head != expected_head:
+        raise EvidenceError("review_head does not equal --expected-head")
+    prior_value = packet.get("prior_review_head")
+    prior_head = None if prior_value is None else full_sha(prior_value, "prior_review_head")
+    if prior_head is not None and prior_packet is None:
+        raise EvidenceError("--prior-packet is required when prior_review_head is set")
+    if prior_packet is not None:
+        expected_prior = full_sha(prior_packet.get("review_head"), "prior packet review_head")
+        if prior_head != expected_prior or prior_head == review_head:
+            raise EvidenceError("prior packet does not identify a different prior reviewed head")
+
+    delta_claims = packet.get("head_delta_claims")
+    if not isinstance(delta_claims, list) or not delta_claims:
+        raise EvidenceError("head_delta_claims must be a non-empty list")
+    delta_ids: set[str] = set()
+    for index, delta in enumerate(delta_claims):
+        if not isinstance(delta, dict):
+            raise EvidenceError(f"head_delta_claims[{index}] must be an object")
+        claim_id = text(delta.get("id"), f"head_delta_claims[{index}].id")
+        if claim_id in delta_ids:
+            raise EvidenceError(f"duplicate head-delta claim id: {claim_id}")
+        delta_ids.add(claim_id)
+        for field in ("changed_path", "changed_hunk", "risk"):
+            text(delta.get(field), f"head_delta_claims[{index}].{field}")
 
     claims = packet.get("claims")
     if not isinstance(claims, list) or not claims:
@@ -45,6 +83,8 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool) -
     mutations: set[str] = set()
     production_count = 0
     score = 0
+    covered_delta_ids: set[str] = set()
+    prior_receipts = {p.get("execution_receipt") for p in (prior_packet or {}).get("probes", []) if isinstance(p, dict)}
     for index, probe in enumerate(probes):
         if not isinstance(probe, dict):
             raise EvidenceError(f"probes[{index}] must be an object")
@@ -54,8 +94,19 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool) -
             raise EvidenceError(f"probes[{index}] must not be author-test-only")
         if probe.get("result") not in {"killed", "exposed"}:
             raise EvidenceError(f"probes[{index}].result must be killed or exposed")
-        for field in ("name", "command", "input", "false_success_mutation", "observed_output", "invariant"):
+        for field in ("name", "command", "input", "false_success_mutation", "observed_output", "invariant", "execution_receipt"):
             text(probe.get(field), f"probes[{index}].{field}")
+        if full_sha(probe.get("executed_head"), f"probes[{index}].executed_head") != review_head:
+            raise EvidenceError(f"probes[{index}] was not executed against review_head")
+        if probe.get("fresh_execution") is not True or probe["execution_receipt"] in prior_receipts:
+            raise EvidenceError(f"probes[{index}] lacks a fresh current-head execution receipt")
+        targets = probe.get("targets_delta_claims")
+        if not isinstance(targets, list) or not targets:
+            raise EvidenceError(f"probes[{index}].targets_delta_claims must be non-empty")
+        normalized_targets = {text(value, f"probes[{index}].targets_delta_claims") for value in targets}
+        if normalized_targets - delta_ids:
+            raise EvidenceError(f"probes[{index}] targets an unknown delta claim")
+        covered_delta_ids.update(normalized_targets)
         command = probe["command"].strip()
         mutation = probe["false_success_mutation"].strip()
         if command in commands:
@@ -67,6 +118,20 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool) -
         if probe.get("production_path") is True:
             production_count += 1
         score += 2
+
+    if delta_ids - covered_delta_ids:
+        raise EvidenceError(f"head-delta claims lack fresh probes: {sorted(delta_ids - covered_delta_ids)}")
+
+    test_evidence = packet.get("test_evidence")
+    if not isinstance(test_evidence, list) or not test_evidence:
+        raise EvidenceError("test_evidence must be a non-empty list")
+    for index, item in enumerate(test_evidence):
+        if not isinstance(item, dict):
+            raise EvidenceError(f"test_evidence[{index}] must be an object")
+        for field in ("test_node", "input_control", "production_boundary", "assertion", "claim"):
+            text(item.get(field), f"test_evidence[{index}].{field}")
+        if full_sha(item.get("inspected_head"), f"test_evidence[{index}].inspected_head") != review_head:
+            raise EvidenceError(f"test_evidence[{index}] was not inspected at review_head")
 
     required_production = 2 if high_risk else 1
     if production_count < required_production:
@@ -97,15 +162,25 @@ def main() -> None:
     parser.add_argument("packet", type=Path)
     parser.add_argument("--prior-overturns", type=int, default=0)
     parser.add_argument("--high-risk", action="store_true")
+    parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--prior-packet", type=Path)
     args = parser.parse_args()
     try:
         packet = json.loads(args.packet.read_text(encoding="utf-8"))
         if not isinstance(packet, dict):
             raise EvidenceError("packet root must be an object")
+        expected_head = full_sha(args.expected_head, "--expected-head")
+        prior_packet = None
+        if args.prior_packet:
+            prior_packet = json.loads(args.prior_packet.read_text(encoding="utf-8"))
+            if not isinstance(prior_packet, dict):
+                raise EvidenceError("prior packet root must be an object")
         required, score = validate(
             packet,
             prior_overturns=args.prior_overturns,
             high_risk=args.high_risk,
+            expected_head=expected_head,
+            prior_packet=prior_packet,
         )
     except (OSError, json.JSONDecodeError, EvidenceError) as error:
         raise SystemExit(f"APPROVAL_EVIDENCE_GATE=FAIL: {error}") from error

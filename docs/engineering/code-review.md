@@ -50,6 +50,12 @@ mutations, concrete observed outputs, and a specific residual-risk statement.
 Independently overturned approvals create reviewer strikes that increase the
 probe quota; fabricated execution evidence invalidates the verdict.
 
+Re-reviews have a freshness gate: enumerate the claims changed since the prior
+reviewed head and freshly probe every one. Prior-head outputs and test
+inventories cannot be relabelled as current evidence. Each cited test is tied
+to its actual input, production boundary, and assertion; external-field and
+one-source-to-many geometry semantics require direct probes.
+
 ## It's working if
 
 - Every material claim appears in a claim-to-evidence ledger.
