@@ -318,7 +318,8 @@ python skills/engineering/code-review/scripts/publish_approval.py \
 ```
 
 The publisher re-queries the live head, invokes the evidence validator in
-process, and refuses publication on any schema, freshness, or head mismatch.
+process, requires the review body to contain that same full head SHA, and
+refuses publication on any schema, freshness, body, or head mismatch.
 Only `APPROVAL_PUBLICATION=PASS` authorizes `READY_FOR_HUMAN_MERGE`. Never
 publish first and validate afterward. `CHANGES_REQUESTED` remains publishable
 directly because it does not transfer merge risk.

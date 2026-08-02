@@ -42,6 +42,11 @@ def main() -> None:
     packet = json.loads(args.packet.read_text(encoding="utf-8"))
     prior = json.loads(args.prior_packet.read_text(encoding="utf-8")) if args.prior_packet else None
     expected = gate.full_sha(args.expected_head, "--expected-head")
+    review_body = args.body_file.read_text(encoding="utf-8")
+    if expected not in review_body:
+        raise SystemExit(
+            "APPROVAL_PUBLICATION=FAIL: review body does not contain the exact validated head"
+        )
     live_before = run("gh", "api", f"repos/{args.repo}/pulls/{args.pr}", "--jq", ".head.sha")
     if live_before != expected:
         raise SystemExit("APPROVAL_PUBLICATION=FAIL: live head changed before evidence validation")
