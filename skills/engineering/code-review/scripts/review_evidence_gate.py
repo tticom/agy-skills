@@ -32,6 +32,8 @@ def full_sha(value: Any, field: str) -> str:
 
 def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
              expected_head: str, prior_packet: dict[str, Any] | None = None) -> tuple[int, int]:
+    if packet.get("schema_version") != 2:
+        raise EvidenceError("schema_version must be 2")
     if packet.get("verdict") != "APPROVE":
         raise EvidenceError("gate is only valid for verdict APPROVE")
 
@@ -46,6 +48,30 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
         expected_prior = full_sha(prior_packet.get("review_head"), "prior packet review_head")
         if prior_head != expected_prior or prior_head == review_head:
             raise EvidenceError("prior packet does not identify a different prior reviewed head")
+
+    changed_test_paths = packet.get("changed_test_paths")
+    if not isinstance(changed_test_paths, list):
+        raise EvidenceError("changed_test_paths must be a list")
+    changed_tests = {
+        text(value, "changed_test_paths[]").replace("\\", "/")
+        for value in changed_test_paths
+    }
+
+    remediation_deltas = packet.get("remediation_deltas")
+    if not isinstance(remediation_deltas, list):
+        raise EvidenceError("remediation_deltas must be a list")
+    if prior_packet is not None and not remediation_deltas:
+        raise EvidenceError("a re-review requires a remediation delta threat model")
+    for index, delta in enumerate(remediation_deltas):
+        if not isinstance(delta, dict):
+            raise EvidenceError(f"remediation_deltas[{index}] must be an object")
+        for field in (
+            "finding_id", "changed_symbols", "fix_assumption", "new_branches",
+            "adjacent_risks", "authority_citation",
+        ):
+            text(delta.get(field), f"remediation_deltas[{index}].{field}")
+        if not isinstance(delta.get("oracle_changed"), bool):
+            raise EvidenceError(f"remediation_deltas[{index}].oracle_changed must be boolean")
 
     delta_claims = packet.get("head_delta_claims")
     if not isinstance(delta_claims, list) or not delta_claims:
@@ -80,6 +106,7 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
         raise EvidenceError(f"need at least {required} reviewer-created probes; found {len(probes)}")
 
     commands: set[str] = set()
+    probe_names: set[str] = set()
     mutations: set[str] = set()
     production_count = 0
     score = 0
@@ -90,12 +117,21 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
             raise EvidenceError(f"probes[{index}] must be an object")
         if probe.get("reviewer_created") is not True:
             raise EvidenceError(f"probes[{index}] is not reviewer-created")
+        if probe.get("artifact_origin") != "reviewer-created":
+            raise EvidenceError(f"probes[{index}].artifact_origin must be reviewer-created")
         if probe.get("author_test_only") is not False:
             raise EvidenceError(f"probes[{index}] must not be author-test-only")
         if probe.get("result") not in {"killed", "exposed"}:
             raise EvidenceError(f"probes[{index}].result must be killed or exposed")
-        for field in ("name", "command", "input", "false_success_mutation", "observed_output", "invariant", "execution_receipt"):
+        for field in (
+            "name", "command", "input", "false_success_mutation", "observed_output",
+            "invariant", "execution_receipt", "artifact_path", "oracle_authority",
+        ):
             text(probe.get(field), f"probes[{index}].{field}")
+        probe_name = probe["name"].strip()
+        if probe_name in probe_names:
+            raise EvidenceError(f"duplicate probe name: {probe_name}")
+        probe_names.add(probe_name)
         if full_sha(probe.get("executed_head"), f"probes[{index}].executed_head") != review_head:
             raise EvidenceError(f"probes[{index}] was not executed against review_head")
         if probe.get("fresh_execution") is not True or probe["execution_receipt"] in prior_receipts:
@@ -108,6 +144,14 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
             raise EvidenceError(f"probes[{index}] targets an unknown delta claim")
         covered_delta_ids.update(normalized_targets)
         command = probe["command"].strip()
+        normalized_command = command.replace("\\", "/")
+        artifact_path = probe["artifact_path"].strip().replace("\\", "/")
+        if artifact_path in changed_tests or any(path in normalized_command for path in changed_tests):
+            raise EvidenceError(
+                f"probes[{index}] relies on an author-changed test and is not reviewer-owned evidence"
+            )
+        if not artifact_path.startswith("reviewer://") and artifact_path not in normalized_command:
+            raise EvidenceError(f"probes[{index}].command does not execute artifact_path")
         mutation = probe["false_success_mutation"].strip()
         if command in commands:
             raise EvidenceError(f"duplicate probe command: {command}")
@@ -121,6 +165,31 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
 
     if delta_ids - covered_delta_ids:
         raise EvidenceError(f"head-delta claims lack fresh probes: {sorted(delta_ids - covered_delta_ids)}")
+
+    registry = packet.get("counterexample_registry")
+    if not isinstance(registry, list) or not registry:
+        raise EvidenceError("counterexample_registry must be a non-empty list")
+    registry_ids: set[str] = set()
+    for index, entry in enumerate(registry):
+        if not isinstance(entry, dict):
+            raise EvidenceError(f"counterexample_registry[{index}] must be an object")
+        entry_id = text(entry.get("id"), f"counterexample_registry[{index}].id")
+        if entry_id in registry_ids:
+            raise EvidenceError(f"duplicate counterexample registry id: {entry_id}")
+        registry_ids.add(entry_id)
+        full_sha(entry.get("origin_head"), f"counterexample_registry[{index}].origin_head")
+        text(entry.get("invariant"), f"counterexample_registry[{index}].invariant")
+        current_probe = text(entry.get("current_probe"), f"counterexample_registry[{index}].current_probe")
+        if current_probe not in probe_names:
+            raise EvidenceError(f"counterexample_registry[{index}] references an unknown current probe")
+    prior_registry_ids = {
+        entry.get("id") for entry in (prior_packet or {}).get("counterexample_registry", [])
+        if isinstance(entry, dict)
+    }
+    if prior_registry_ids - registry_ids:
+        raise EvidenceError(
+            f"re-review dropped prior counterexamples: {sorted(prior_registry_ids - registry_ids)}"
+        )
 
     test_evidence = packet.get("test_evidence")
     if not isinstance(test_evidence, list) or not test_evidence:
