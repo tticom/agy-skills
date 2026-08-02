@@ -302,3 +302,23 @@ When publication is authorized, publish the formal hosting-service verdict
 before reporting a machine-actionable state. Re-query the review timeline and
 prove the verdict exists on the exact head. A local task update, chat response,
 or issue comment is not a substitute for a formal review.
+
+For `APPROVE`, direct `gh pr review --approve`, API review submission, and UI
+approval are forbidden. Publish only through:
+
+```bash
+python skills/engineering/code-review/scripts/publish_approval.py \
+  --repo <owner/repo> --pr <number> \
+  --expected-head <full-reviewed-head> \
+  --packet review-evidence.json \
+  --body-file review-body.md \
+  [--prior-packet previous-head-review-evidence.json] \
+  --prior-overturns <active-strikes> \
+  [--high-risk]
+```
+
+The publisher re-queries the live head, invokes the evidence validator in
+process, and refuses publication on any schema, freshness, or head mismatch.
+Only `APPROVAL_PUBLICATION=PASS` authorizes `READY_FOR_HUMAN_MERGE`. Never
+publish first and validate afterward. `CHANGES_REQUESTED` remains publishable
+directly because it does not transfer merge risk.

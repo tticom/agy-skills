@@ -56,6 +56,11 @@ inventories cannot be relabelled as current evidence. Each cited test is tied
 to its actual input, production boundary, and assertion; external-field and
 one-source-to-many geometry semantics require direct probes.
 
+Approval publication itself is guarded: the bundled publisher validates the
+packet and live head before it submits the formal review. Direct approval
+commands are prohibited, so a skipped or failed evidence gate cannot produce a
+merge-ready verdict.
+
 ## It's working if
 
 - Every material claim appears in a claim-to-evidence ledger.
