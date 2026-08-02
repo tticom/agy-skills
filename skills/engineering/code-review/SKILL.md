@@ -124,6 +124,19 @@ For every claim record:
 
 Do not mark a claim verified from a test name, comment, aggregate count, snapshot existence, or agent summary.
 
+Maintain a durable **counterexample registry** across every revised head. Each
+entry records the original finding/head, invariant, reviewer-owned probe, and
+fresh current-head receipt. Before approving a revised head, replay every
+registered counterexample, not only the latest requested change. A fix that
+passes its new test but breaks an earlier probe cannot be approved.
+
+For every finding disposition, write a **remediation delta threat model**:
+the changed symbols, assumptions introduced by the fix, new branches or
+thresholds, adjacent false-positive and false-negative risks, and governing
+authority citation. Exercise zero/one/many cardinality, exact/near-duplicate,
+and both sides of every new tolerance when applicable. Treat any author change
+to an expected outcome as untrusted until it is traced to that authority.
+
 For every cited test, inspect and record its exact node, behavior-controlling
 input, production boundary, exact assertion, and supported claim. A green node
 without this semantic attribution has zero weight. An obsolete or renamed test
@@ -168,6 +181,13 @@ Author-authored tests, CI, linters, schema export, and `agent_verify.py` score
 zero adversarial points. A reviewer-created probe scores 2 only when it has a
 unique false-success mutation, runs the claimed production boundary, records
 the exact command/input/output, and kills or exposes that mutation.
+
+A probe is reviewer-created only when its executable artifact was authored by
+the reviewer outside the PR's changed test files. Running a changed test node,
+copying its fixture construction into prose, or setting
+`reviewer_created: true` does not make it independent. Record the reviewer
+artifact path/hash and make the command execute that artifact. The approval
+gate rejects changed-test commands as adversarial probes.
 
 ### 5. Spawn three independent review axes
 
@@ -243,6 +263,12 @@ area, source identity, and derived segments where applicable.
 When one source expands into several candidates, or several sources merge into
 one, trace stable source identity end to end. Probe representation invariance
 with at least two supported encodings of the same semantic object.
+
+On every re-review, first replay the complete counterexample registry at the
+new exact head. Then attack the remediation itself: test the closest value that
+must remain distinct, the nearest representation that must remain rejected,
+and a multi-item case that invalidates any new grouping shortcut. Never weaken
+or replace an earlier oracle merely to make a fix pass.
 
 ### 7. Gate the verdict
 

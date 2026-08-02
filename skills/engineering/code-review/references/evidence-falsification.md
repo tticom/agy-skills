@@ -152,6 +152,9 @@ An approval packet has this shape:
 
 ```json
 {
+  "schema_version": 2,
+  "changed_test_paths": ["tests/test_example.py"],
+  "remediation_deltas": [],
   "verdict": "APPROVE",
   "review_head": "0123456789abcdef0123456789abcdef01234567",
   "prior_review_head": null,
@@ -177,12 +180,16 @@ An approval packet has this shape:
       "observed_output": "concrete value that distinguishes outcomes",
       "invariant": "what must remain true",
       "result": "killed",
+      "artifact_origin": "reviewer-created",
+      "artifact_path": "/tmp/reviewer-width-probe.py",
+      "oracle_authority": "spec.md section 4",
       "executed_head": "0123456789abcdef0123456789abcdef01234567",
       "fresh_execution": true,
       "execution_receipt": "sha256:new-captured-probe-output",
       "targets_delta_claims": ["delta-1"]
     }
   ],
+  "counterexample_registry": [{"id": "width-boundary", "origin_head": "0123456789abcdef0123456789abcdef01234567", "invariant": "4.0pt is accepted and 4.001pt is rejected", "current_probe": "e2e-public-pdf"}],
   "test_evidence": [{"test_node": "tests/test_example.py::test_width", "input_control": "20pt rectangle with 1pt pen", "production_boundary": "extract -> classify", "assertion": "candidate rejected", "claim": "geometry width controls rejection", "inspected_head": "0123456789abcdef0123456789abcdef01234567"}],
   "residual_risks": ["specific untested behavior and why it remains"],
   "integrity_attestation": "I personally ran every listed probe against the pinned review head and recorded observed output without inference."
@@ -206,6 +213,15 @@ Rules:
 - every cited test requires inspected input, production call, and assertion;
 - library field names do not prove semantics; units, provenance, and
   one-source-to-many expansion require a direct API or source probe.
+- reviewer-created probes must execute reviewer-owned artifacts outside every
+  changed test path; self-declared provenance is insufficient;
+- every re-review carries forward and freshly executes the complete
+  counterexample registry;
+- every remediation delta records new assumptions, adjacent risks, and an
+  authority citation; changing an oracle without authority is forbidden;
+- a remediation review must challenge the closest distinct value, the nearest
+  rejected representation, and relevant zero/one/many cardinalities rather
+  than confirming only the literal reported example.
 
 Projects should keep a reviewer scorecard. An independently overturned approval
 adds one strike for the next five reviews. Evidence fabrication adds two.
