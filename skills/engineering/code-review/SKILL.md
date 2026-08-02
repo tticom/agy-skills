@@ -101,6 +101,12 @@ Find repository standards such as `AGENTS.md`, `CONTRIBUTING.md`, coding standar
 
 ### 3. Build the claim ledger
 
+For every re-review, first compute the delta from the last formally reviewed
+head to the current live head. Build a separate **head-delta ledger** for every
+changed claim, discriminator, representation, test oracle, and previous-finding
+disposition. Prior-head conclusions are historical context only. Never reuse
+their probe output, hashes, test inventory, or approval prose as current evidence.
+
 Before reading conclusions from tests, list each material claim made by the spec, PR body, handback, or implementation. At minimum include claims about:
 
 - changed behavior and failure behavior;
@@ -117,6 +123,11 @@ For every claim record:
 | exact behavior asserted | function/module reached | test/artifact/assertion | smallest broken implementation that might still pass | verified / contradicted / cannot verify |
 
 Do not mark a claim verified from a test name, comment, aggregate count, snapshot existence, or agent summary.
+
+For every cited test, inspect and record its exact node, behavior-controlling
+input, production boundary, exact assertion, and supported claim. A green node
+without this semantic attribution has zero weight. An obsolete or renamed test
+node is a hard evidence-integrity failure.
 
 ### 4. Run the assertion-smell scan
 
@@ -211,6 +222,15 @@ For thresholds, verify both sides with geometry/data that depends on the thresho
 
 For collection logic, check permutation invariance, duplicate handling, competition, and global assignment rather than only isolated elements.
 
+Never infer external-library or serialized-field semantics from a name. Inspect
+authoritative documentation or run a minimal direct API probe in the pinned
+environment. Record units and distinguish pen width, bounding-box width, filled
+area, source identity, and derived segments where applicable.
+
+When one source expands into several candidates, or several sources merge into
+one, trace stable source identity end to end. Probe representation invariance
+with at least two supported encodings of the same semantic object.
+
 ### 7. Gate the verdict
 
 Approval is allowed only when:
@@ -234,6 +254,8 @@ and run:
 ```bash
 python skills/engineering/code-review/scripts/review_evidence_gate.py \
   review-evidence.json \
+  --expected-head <full-reviewed-head> \
+  [--prior-packet previous-head-review-evidence.json] \
   --prior-overturns <active-strikes> \
   [--high-risk]
 ```
@@ -241,6 +263,11 @@ python skills/engineering/code-review/scripts/review_evidence_gate.py \
 The command must print `APPROVAL_EVIDENCE_GATE=PASS`. Any failure forces
 `CHANGES_REQUESTED` or `CANNOT_VERIFY`. Do not weaken the packet, relabel an
 author test as reviewer-created, or omit a material claim to pass the gate.
+
+On a re-review, `--prior-packet` is mandatory. Every probe must name the exact
+current `executed_head`, declare `fresh_execution: true`, carry a new execution
+receipt, and target a current head-delta claim. Every delta claim requires a
+fresh reviewer probe. Copying prior observed output or its hash is fabrication.
 
 ### 8. Report
 
