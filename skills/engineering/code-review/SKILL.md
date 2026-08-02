@@ -129,6 +129,19 @@ input, production boundary, exact assertion, and supported claim. A green node
 without this semantic attribution has zero weight. An obsolete or renamed test
 node is a hard evidence-integrity failure.
 
+For a governance promotion, specification handoff, generated task, or any
+change that translates one authority document into another, build a
+**contract-translation matrix** before reviewing internal consistency:
+
+| Source obligation | Destination rule | Acceptance oracle | Negative control | Scope owner |
+|---|---|---|---|---|
+
+Every source obligation must be preserved, explicitly deferred, or rejected
+with authority. Missing rows block approval. Check thresholds and both sides of
+their boundaries, post-transform cardinality (one-to-many, many-to-one, and a
+single merged result), consumer observability, and exact agreement between all
+allowed-file lists.
+
 ### 4. Run the assertion-smell scan
 
 Run:
@@ -295,6 +308,18 @@ End with one verdict:
 - `APPROVE`
 - `CHANGES_REQUESTED`
 - `CANNOT_VERIFY`
+
+After the primary verdict, always include a short **Review process learning**:
+
+- name any reusable risk class the current instructions failed to expose early;
+- state whether an existing skill/rule already covers it but was ignored, or a
+  durable instruction improvement is warranted;
+- if warranted, propose or implement the smallest separate skill/governance
+  change without modifying the reviewed PR or delaying its verdict.
+
+Use `No durable update needed` when the miss is task-specific. Never invent a
+process change merely to populate this section, and never let this secondary
+learning task weaken, postpone, or contaminate the primary review.
 
 Never publish, approve, merge, or change a pull request unless the user or governing workflow authorizes that action.
 

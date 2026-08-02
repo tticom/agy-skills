@@ -37,6 +37,15 @@ The **Spec** axis needs an originating issue, PRD, or specification. Issue-track
 
 The axes run independently so a clean implementation cannot hide a spec failure and a faithful implementation cannot hide weak evidence. The primary reviewer then inspects the raw production path and assertions before issuing a verdict. A delegated report is evidence-gathering, not an approval.
 
+Governance and specification handoffs also receive a contract-translation
+audit: every upstream obligation must map to a destination rule, acceptance
+oracle, negative control, and consistent scope owner. This catches requirements
+that disappear while the generated prompt remains internally tidy.
+
+Each review closes with a separate process-learning note. Reusable misses can
+produce a focused follow-up skill change, but that secondary improvement never
+changes or delays the reviewed PR's verdict.
+
 ## Falsification, not test counting
 
 The leading idea is **falsification**. A test earns evidentiary weight only when its inputs reach the changed production path and its assertion changes under the relevant defect.
