@@ -183,7 +183,7 @@ Skills I use daily for code work.
 - **[setup-matt-pocock-skills](./skills/engineering/setup-matt-pocock-skills/SKILL.md)** — Configure this repo for the engineering skills (issue tracker, triage labels, domain doc layout). Run once per repo before using the other engineering skills.
 - **[to-spec](./skills/engineering/to-spec/SKILL.md)** — Turn the current conversation into a spec and publish it to the issue tracker. No interview — just synthesizes what you've already discussed.
 - **[to-tickets](./skills/engineering/to-tickets/SKILL.md)** — Break any plan, spec, or conversation into a set of tracer-bullet tickets, each declaring its blocking edges — written as text in a local file, or as native blocking links on a real tracker.
-- **[implement](./skills/engineering/implement/SKILL.md)** — Build the work described by a spec or set of tickets, driving `/tdd` at pre-agreed seams and closing out with `/code-review` before committing.
+- **[implement](./skills/engineering/implement/SKILL.md)** — Build the work described by a spec or set of tickets, driving `/tdd` at pre-agreed seams and handing the result to an independent reviewer.
 - **[wayfinder](./skills/engineering/wayfinder/SKILL.md)** — Plan a huge chunk of work, more than one agent session can hold, as a shared map of investigation tickets on the issue tracker — resolve them one at a time until the way to the destination is clear.
 
 **Model-invoked**
@@ -194,7 +194,9 @@ Skills I use daily for code work.
 - **[tdd](./skills/engineering/tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[domain-modeling](./skills/engineering/domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms against the glossary, stress-test with edge-case scenarios, and update `CONTEXT.md` and ADRs inline.
 - **[codebase-design](./skills/engineering/codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface.
-- **[code-review](./skills/engineering/code-review/SKILL.md)** — Three-axis review of a pinned diff: **Standards**, **Spec**, and **Evidence/Falsification**, with claim tracing and false-success challenges before approval.
+- **[code-review](./skills/engineering/code-review/SKILL.md)** — Basic exact-head review covering repository standards, specification, code sanity, regression safety, inline findings, and a mandatory PR summary without modifying the branch.
+- **[hard-review](./skills/engineering/hard-review/SKILL.md)** — Adds real-world test-data provenance, independent-oracle, and production fixture-coupling gates.
+- **[devils-advocate-review](./skills/engineering/devils-advocate-review/SKILL.md)** — Adds independent counterexamples and attempts to disprove developer and prior-reviewer claims before approval.
 - **[governed-development-loop](./skills/engineering/governed-development-loop/SKILL.md)** — Execute one authorised, review-gated task from pinned state to an independently reviewable remote head.
 - **[governance-author](./skills/engineering/governance-author/SKILL.md)** — Turn a maintainer decision into a bounded governance promotion without repository-ownership drift or role self-promotion.
 - **[identity-safe-git](./skills/engineering/identity-safe-git/SKILL.md)** — Verify OS, Git-host, author, workspace, and branch identity before repository mutations.

@@ -31,7 +31,8 @@ def full_sha(value: Any, field: str) -> str:
 
 
 def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
-             expected_head: str, prior_packet: dict[str, Any] | None = None) -> tuple[int, int]:
+             expected_head: str, prior_packet: dict[str, Any] | None = None,
+             devils_advocate: bool = False) -> tuple[int, int]:
     if packet.get("schema_version") != 2:
         raise EvidenceError("schema_version must be 2")
     if packet.get("verdict") != "APPROVE":
@@ -101,7 +102,9 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
     probes = packet.get("probes")
     if not isinstance(probes, list):
         raise EvidenceError("probes must be a list")
-    required = max(3 if high_risk else 2, 2) + min(max(prior_overturns, 0), 2)
+    required = (4 if devils_advocate else 3 if high_risk else 2) + min(
+        max(prior_overturns, 0), 2
+    )
     if len(probes) < required:
         raise EvidenceError(f"need at least {required} reviewer-created probes; found {len(probes)}")
 
@@ -201,6 +204,40 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
             text(item.get(field), f"test_evidence[{index}].{field}")
         if full_sha(item.get("inspected_head"), f"test_evidence[{index}].inspected_head") != review_head:
             raise EvidenceError(f"test_evidence[{index}] was not inspected at review_head")
+        if high_risk or devils_advocate:
+            data_class = text(item.get("data_class"), f"test_evidence[{index}].data_class")
+            if data_class not in {"REAL_SOURCE_END_TO_END", "REAL_SOURCE_EXTRACT"}:
+                raise EvidenceError(
+                    f"test_evidence[{index}] lacks real-source acceptance evidence"
+                )
+            for field in ("source_artifact", "provenance_receipt", "oracle"):
+                text(item.get(field), f"test_evidence[{index}].{field}")
+            if item.get("oracle_independent") is not True:
+                raise EvidenceError(
+                    f"test_evidence[{index}].oracle_independent must be true"
+                )
+
+    if high_risk or devils_advocate:
+        artifacts = packet.get("real_artifacts_exercised")
+        if not isinstance(artifacts, list) or not artifacts:
+            raise EvidenceError("real_artifacts_exercised must be a non-empty list")
+        for index, artifact in enumerate(artifacts):
+            text(artifact, f"real_artifacts_exercised[{index}]")
+
+        coupling = packet.get("fixture_coupling")
+        if not isinstance(coupling, dict):
+            raise EvidenceError("fixture_coupling must be an object")
+        if coupling.get("scanner_result") != "PASS":
+            raise EvidenceError("fixture_coupling.scanner_result must be PASS")
+        if coupling.get("manual_review") is not True:
+            raise EvidenceError("fixture_coupling.manual_review must be true")
+        production_paths = coupling.get("production_paths")
+        if not isinstance(production_paths, list) or not production_paths:
+            raise EvidenceError("fixture_coupling.production_paths must be non-empty")
+        for index, path in enumerate(production_paths):
+            text(path, f"fixture_coupling.production_paths[{index}]")
+        if coupling.get("fixture_identifiers_found") != []:
+            raise EvidenceError("fixture_coupling.fixture_identifiers_found must be empty")
 
     required_production = 2 if high_risk else 1
     if production_count < required_production:
@@ -231,6 +268,7 @@ def main() -> None:
     parser.add_argument("packet", type=Path)
     parser.add_argument("--prior-overturns", type=int, default=0)
     parser.add_argument("--high-risk", action="store_true")
+    parser.add_argument("--devils-advocate", action="store_true")
     parser.add_argument("--expected-head", required=True)
     parser.add_argument("--prior-packet", type=Path)
     args = parser.parse_args()
@@ -250,6 +288,7 @@ def main() -> None:
             high_risk=args.high_risk,
             expected_head=expected_head,
             prior_packet=prior_packet,
+            devils_advocate=args.devils_advocate,
         )
     except (OSError, json.JSONDecodeError, EvidenceError) as error:
         raise SystemExit(f"APPROVAL_EVIDENCE_GATE=FAIL: {error}") from error

@@ -63,6 +63,14 @@ If publication is authorised:
 Do not self-approve, merge, enable auto-merge, bypass protection, begin a
 second task, or turn a recorded next candidate into authority.
 
+An author must not switch into a reviewer role. A reviewer must use one of
+`code-review`, `hard-review`, or `devils-advocate-review` and is restricted to
+hosting-service review metadata; it must never patch or push the reviewed PR.
+`tticom-gov` and `tticom-automation` can never merge. `tticom-codex` may merge
+only after a current explicit instruction from `tticom` naming the exact
+repository and PR, validated as a separate integration action through
+`identity-safe-git`.
+
 ## Continue only from new authority
 
 After a maintainer reports a merge:

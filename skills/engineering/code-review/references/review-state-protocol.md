@@ -36,6 +36,14 @@ progress.
 
 ## Publication gate
 
-After publishing a verdict, re-query formal reviews and require reviewer,
-head, state, timestamp, and review ID to match. Do not report
-`AWAITING_AUTHOR_FIXES` or `READY_FOR_HUMAN_MERGE` until this proof succeeds.
+Publish only through `scripts/publish_review.py`. It binds the formal review,
+optional inline comments, and mandatory marked PR summary to one exact head.
+
+After publishing, re-query formal reviews and issue comments. Require reviewer,
+head, state, timestamp, review ID, summary marker, and summary comment ID to
+match. Do not report `AWAITING_AUTHOR_FIXES` or `READY_FOR_HUMAN_MERGE` until
+this proof succeeds.
+
+Review publication never authorizes a repository edit or merge. A proposed
+process improvement remains comment text until a separate development task is
+authorized.
