@@ -1,0 +1,135 @@
+---
+name: devils-advocate-review
+description: Perform the complete basic and hard reviews while presuming every developer claim, handback, test conclusion, and earlier reviewer approval is wrong until independent attempts fail to disprove it. Use for high-risk changes, disputed or repeatedly revised PRs, prior false approvals, governance handoffs, conversion correctness, or when the user asks for a real, adversarial, devil's-advocate, or final review.
+---
+
+# Devil's-advocate review
+
+First execute the complete
+[basic review](../code-review/SKILL.md) and
+[hard review](../hard-review/SKILL.md). Preserve every gate, publication duty,
+and the comment-only reviewer firewall.
+
+Begin with the provisional verdict `CHANGES_REQUESTED`. The implementation must
+earn its way out one claim at a time.
+
+## 1. Treat advocacy as hostile evidence
+
+Assume these are wrong until independently verified:
+
+- PR body and developer handback;
+- test names and green check summaries;
+- claims of “dynamic”, “end-to-end”, “real-world”, “full corpus”, “no leak”,
+  “resolved”, “100%”, or “no residual risk”;
+- every prior reviewer finding disposition and approval, including reviews by
+  trusted agents;
+- the current task's translation of upstream architecture or requirements.
+
+Do not seek confirmation. Seek the smallest realistic counterexample.
+
+## 2. Audit every prior reviewer
+
+Read all formal reviews, inline threads, and PR comments at every relevant head.
+Build a contradiction ledger:
+
+| Actor | Review ID/head | Claim or finding | Independent attack | Observed result | Disposition |
+|---|---|---|---|---|---|
+
+Re-run the underlying production path rather than repeating another reviewer's
+words or command summary. A previous approval contributes no evidentiary weight.
+A prior blocker remains open until the exact current head survives its original
+counterexample and the remediation introduces no adjacent defect.
+
+For re-review, compute the head delta and attack the fix itself: closest values
+that must remain distinct, nearest representation that must remain rejected,
+zero/one/many cases, and interactions with every earlier remediation.
+
+## 3. Create independent disconfirmation attempts
+
+For each material claim:
+
+1. state a plausible broken implementation;
+2. create a reviewer-owned probe outside the repository;
+3. run it against the exact pinned production head;
+4. record exact input, command, observed output, exit code, and execution
+   receipt;
+5. decide `disproved`, `survived`, or `cannot verify`.
+
+Author tests and CI are context, not adversarial probes. Copying an author test
+into prose or changing its label does not make it reviewer-created.
+
+Minimum independent probes:
+
+- three for ordinary devil's-advocate review;
+- four for timing, grouping, parser, privacy, fail-closed, conversion-fidelity,
+  or end-to-end claims;
+- one additional probe for each independently overturned prior approval, up to
+  two additional probes.
+
+At least two probes must execute the production path for high-risk changes.
+Prefer one counterexample that breaks the claim over many confirming examples.
+
+## 4. Challenge the contract and architecture
+
+When a PR translates architecture, governance, or a task prompt, build:
+
+| Source obligation | Destination rule | Acceptance oracle | Negative control | Owner |
+|---|---|---|---|---|
+
+Every source obligation must be preserved, explicitly deferred with authority,
+or rejected with authority. Internal consistency is insufficient if the source
+contract was mistranslated.
+
+Challenge whether the abstraction solves the actual production failure rather
+than making diagnostics cleaner, making a fixture pass, or converting an unsafe
+result into a graceful refusal. Trace observable user value through the final
+consumer.
+
+## 5. Approval burden
+
+Approve only when all of the following are true:
+
+- every basic and hard-review gate passes;
+- every developer claim has a complete production-and-oracle trace;
+- every relevant prior reviewer claim has been independently challenged;
+- no disconfirmation attempt proves a material claim wrong;
+- all earlier counterexamples survive freshly at the current exact head;
+- required real-world tests run rather than skip;
+- production code is demonstrably fixture-independent;
+- remaining uncertainty is specific and non-blocking.
+
+One proved contradiction requires `CHANGES_REQUESTED`. One material claim that
+cannot be independently tested requires `CANNOT_VERIFY`. Do not turn uncertainty
+into approval.
+
+Use the existing evidence gate before approval and store its packet outside the
+reviewed repository:
+
+```bash
+python skills/engineering/code-review/scripts/review_evidence_gate.py \
+  <external-evidence-packet.json> \
+  --expected-head <full-reviewed-head> \
+  [--prior-packet <external-prior-packet.json>] \
+  --prior-overturns <count> --high-risk --devils-advocate
+```
+
+The command must print `APPROVAL_EVIDENCE_GATE=PASS`. Never weaken or fabricate
+the packet to obtain a pass.
+
+Publish with the shared wrapper using `--level devils-advocate` and, for
+approval, the same external packet plus any prior packet and overturn count.
+The wrapper requires at least four independent probes before a
+devil's-advocate approval and always publishes the mandatory PR summary.
+
+The mandatory PR summary must use:
+
+```text
+<!-- reviewer-summary:devils-advocate:<full-head-sha> -->
+Review level: DEVILS_ADVOCATE
+```
+
+Include the contradiction ledger, reviewer-created probes, strongest disproved
+or surviving false-success mode, evidence-gate result, and residual risk.
+
+Do not implement fixes or reviewer-process improvements. Publish them only as
+comments for a separately authorized development cycle.

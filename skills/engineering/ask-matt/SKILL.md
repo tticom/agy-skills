@@ -23,7 +23,7 @@ The route most work travels. You have an idea and want it built.
    - **Yes** → **`/to-spec`** (turn the thread into a spec), then **`/to-tickets`** to split it into tracer-bullet tickets, each declaring its **blocking edges**. On a local tracker that's one file per ticket under `.scratch/<feature>/issues/`, worked blockers-first by hand; on a real tracker the edges become native blocking links, so any ticket whose blockers are done can be grabbed — kick off **`/implement`** per ticket, **clearing context between each one**.
    - **No** → **`/implement`** right here, in the same context window.
 
-   Either way, **`/implement`** builds each issue by driving **`/tdd`** internally — one red-green slice at a time — then closes out by running **`/code-review`**, a three-axis review (Standards + Spec + Evidence/Falsification) of the diff, before committing. Reach for **`/tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec, and **`/code-review`** on its own whenever you want to review a branch or PR against a fixed point. The evidence axis treats green tests and summaries as claims until it traces them through production code to discriminating assertions.
+   Either way, **`/implement`** builds each issue by driving **`/tdd`** internally — one red-green slice at a time — and then hands off for independent review. Use **`/code-review`** for an ordinary exact-head sanity review, **`/hard-review`** when real-data provenance or fixture independence matters, and **`/devils-advocate-review`** for high-risk, disputed, or repeatedly revised work where every developer and prior-reviewer claim must be independently challenged. Reach for **`/tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec.
 
 ### Context hygiene
 
@@ -34,7 +34,7 @@ Keep steps 1–3 in **one unbroken context window** — don't compact or clear u
 When a project has an active-task pointer, fixed authorised paths, separate
 author/reviewer identities, or one-PR-at-a-time policy, use
 **`/governed-development-loop`** instead of `/implement`. It composes
-`/identity-safe-git`, `/durable-handoff`, and `/code-review` while leaving
+`/identity-safe-git`, `/durable-handoff`, and the project-selected review level while leaving
 project-specific evidence and merge policy in the project's profile.
 
 When the work is to create or revise that active-task pointer, role prompt, or

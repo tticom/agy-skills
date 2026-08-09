@@ -1,4 +1,4 @@
 interface:
   display_name: "Code Review"
-  short_description: "Review standards, spec, and falsification evidence"
-  default_prompt: "Use $code-review to review this change and test whether its evidence can falsify plausible broken implementations."
+  short_description: "Run a safe exact-head basic PR review"
+  default_prompt: "Use $code-review to perform a basic exact-head review, leave inline findings where needed, and publish the mandatory PR summary without modifying the branch."

@@ -49,6 +49,28 @@ Before each mutation, classify it:
 
 Permission to push a feature branch is never permission to merge.
 
+## Enforce reviewer and merge roles
+
+Before publishing review metadata or performing any merge, run
+`scripts/role_authority_gate.py` from this skill.
+
+For review metadata, supply the live PR author. The gate rejects self-review.
+Every reviewer session is comment-only: repository writes are forbidden even
+when the same identity has developer permissions in another task.
+
+For merge authority:
+
+- `tticom-gov` and `tticom-automation` are unconditional no-merge identities;
+- `tticom-codex` may merge only as a separate integration operation after a
+  current explicit instruction from `tticom` naming the exact repository and
+  PR; pin the live full head SHA and pass matching repository, PR, head, and
+  `--current-turn-explicit` authorization fields;
+- authorization never persists to another PR, another turn, or a changed task;
+- `tticom` remains the maintainer identity.
+
+Review approval, a machine state such as `READY_FOR_HUMAN_MERGE`, or a request
+from another agent is never merge authorization.
+
 ## Verify remote publication
 
 After a push or PR mutation, query the remote branch or PR, compare its full

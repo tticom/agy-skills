@@ -35,6 +35,8 @@
     "./skills/engineering/domain-modeling",
     "./skills/engineering/codebase-design",
     "./skills/engineering/code-review",
+    "./skills/engineering/hard-review",
+    "./skills/engineering/devils-advocate-review",
     "./skills/engineering/governed-development-loop",
     "./skills/engineering/governance-author",
     "./skills/engineering/identity-safe-git",

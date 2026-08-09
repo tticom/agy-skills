@@ -19,6 +19,11 @@ It permits explicitly authorised feature-branch work while keeping protected
 branches, force pushes, self-approval, merges, and destructive operations as
 separate permissions.
 
+The role authority gate makes reviewer sessions comment-only, permanently
+denies merge authority to `tticom-gov` and `tticom-automation`, and permits
+`tticom-codex` to merge only after a current explicit instruction from `tticom`
+identifies the exact repository and PR.
+
 ## When to reach for it
 
 Type `/identity-safe-git`, or the agent reaches for it automatically in

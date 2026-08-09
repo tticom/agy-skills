@@ -10,6 +10,9 @@ Use /tdd where possible, at pre-agreed seams.
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
-Once done, use /code-review to review the work.
+Once done, run an author self-check against the specification and repository
+validation contract. Do not invoke a reviewer skill, publish a formal review,
+or approve your own work.
 
-Commit your work to the current branch.
+Commit and publish the authorized branch, then stop for an independent
+`/code-review`, `/hard-review`, or `/devils-advocate-review` by another identity.

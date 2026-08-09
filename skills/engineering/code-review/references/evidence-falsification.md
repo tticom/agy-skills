@@ -7,12 +7,13 @@ Use this protocol to decide whether evidence can support a review claim. Its pur
 1. Claim tracing
 2. Discriminating assertions
 3. End-to-end and dynamic-input claims
-4. State distinctions
-5. Boundary and scale tests
-6. Collections and matching
-7. Validation provenance
-8. Approval questions
-9. Reviewer incentives and evidence packet
+4. Real-data provenance and fixture independence
+5. State distinctions
+6. Boundary and scale tests
+7. Collections and matching
+8. Validation provenance
+9. Approval questions
+10. Reviewer incentives and evidence packet
 
 ## 1. Claim tracing
 
@@ -63,7 +64,28 @@ Inspect unused extracted variables. Extraction followed by hardcoded substitutio
 
 For fixture or integration claims, require the changed production function to consume the extracted values and produce the asserted semantic output. Aggregate extraction counts establish fixture presence only.
 
-## 4. State distinctions
+## 4. Real-data provenance and fixture independence
+
+Classify every cited test as real-source end-to-end, reproducibly extracted
+real-source data, synthetic/mocked, or data-free. Synthetic and data-free tests
+may localize a defect but cannot prove real-world behavior. A material domain
+claim needs a genuine source artifact to reach the changed production boundary
+and an independent semantic oracle to inspect its output.
+
+Reference outputs are oracles, not production inputs. Fail the review if
+expected timing, coordinates, hashes, labels, or other reference-derived facts
+are injected into the path being evaluated.
+
+Search production code for fixture names, paths, hashes, exact coordinates,
+expected counts, and branches keyed to file identity. One fixture can expose a
+defect but cannot justify a universal tolerance. Require evidence from multiple
+real sources or a domain-derived rationale for generalized thresholds.
+
+Hardcoded values remain synthetic even when a comment says they were measured
+from a real fixture. An extracted-real-data claim requires a reproducible
+extraction command and provenance tying each value to the pinned source.
+
+## 5. State distinctions
 
 When the domain distinguishes states such as:
 
@@ -78,7 +100,7 @@ require distinct representations and exact assertions for each. Confirm ambiguou
 
 Exercise both returned-diagnostic and raised-error modes when both are public behavior.
 
-## 5. Boundary and scale tests
+## 6. Boundary and scale tests
 
 For a threshold `t`, use samples whose result changes because of `t`:
 
@@ -96,7 +118,7 @@ For scaled geometry:
 - test both sides at each scale;
 - verify all claimed dimensions, not merely one representative dimension.
 
-## 6. Collections and matching
+## 7. Collections and matching
 
 For grouping, matching, assignment, and deduplication, inspect:
 
@@ -111,7 +133,7 @@ For grouping, matching, assignment, and deduplication, inspect:
 
 Fail-closed behavior is acceptable only when it is explicit and cannot be mistaken for valid evidence.
 
-## 7. Validation provenance
+## 8. Validation provenance
 
 For a live review, bind evidence to the exact reviewed head.
 
@@ -128,7 +150,7 @@ Check:
 
 Chat output is navigation, not durable evidence.
 
-## 8. Approval questions
+## 9. Approval questions
 
 Before approval answer all of these with concrete locations:
 
@@ -142,7 +164,7 @@ Before approval answer all of these with concrete locations:
 
 Any unsupported material answer blocks approval.
 
-## 9. Reviewer incentives and evidence packet
+## 10. Reviewer incentives and evidence packet
 
 Approval is the costliest verdict because it transfers risk to the maintainer.
 Do not reward approval volume. Reward independently falsified claims and
@@ -190,7 +212,9 @@ An approval packet has this shape:
     }
   ],
   "counterexample_registry": [{"id": "width-boundary", "origin_head": "0123456789abcdef0123456789abcdef01234567", "invariant": "4.0pt is accepted and 4.001pt is rejected", "current_probe": "e2e-public-pdf"}],
-  "test_evidence": [{"test_node": "tests/test_example.py::test_width", "input_control": "20pt rectangle with 1pt pen", "production_boundary": "extract -> classify", "assertion": "candidate rejected", "claim": "geometry width controls rejection", "inspected_head": "0123456789abcdef0123456789abcdef01234567"}],
+  "test_evidence": [{"test_node": "tests/test_example.py::test_width", "input_control": "real PDF primitive", "production_boundary": "extract -> classify", "assertion": "candidate rejected", "claim": "geometry width controls rejection", "inspected_head": "0123456789abcdef0123456789abcdef01234567", "data_class": "REAL_SOURCE_END_TO_END", "source_artifact": "private/example.pdf", "provenance_receipt": "sha256:source-artifact", "oracle": "independent reference score semantic comparison", "oracle_independent": true}],
+  "real_artifacts_exercised": ["private/example.pdf@sha256:source-artifact"],
+  "fixture_coupling": {"scanner_result": "PASS", "manual_review": true, "production_paths": ["src/example.py"], "fixture_identifiers_found": []},
   "residual_risks": ["specific untested behavior and why it remains"],
   "integrity_attestation": "I personally ran every listed probe against the pinned review head and recorded observed output without inference."
 }

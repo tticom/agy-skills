@@ -49,7 +49,9 @@ For research or architecture, require a decision outcome, evidence needed to con
 
 - An Architect may recommend a candidate but must not activate it.
 - A Developer may update only the current task branch and PR.
-- A Reviewer may publish a verdict but must not implement the fix under the reviewer identity.
+- A Reviewer may publish only formal reviews, inline comments, and PR comments.
+  The reviewer must not create or modify repository files, commit, push, update
+  the PR branch, implement the fix, or store review evidence on the branch.
 - A governance author may promote a reviewed candidate but must not perform the authorized product work.
 - A recorded candidate requires a separate governance promotion unless the project explicitly authorizes one-task/one-PR continuation in the same durable-output repository.
 
@@ -78,3 +80,8 @@ Invoke `/durable-handoff` for the project-required record. Publish one branch an
 - machine-actionable next state.
 
 Do not merge, force-push, create a successor task, or continue into the authorized role.
+
+When the governance author later acts as a reviewer, invoke the appropriate
+`code-review`, `hard-review`, or `devils-advocate-review` skill in a separate
+clean detached worktree. `tticom-gov` has no merge authority under any task or
+prompt.

@@ -42,8 +42,9 @@ Backlogs and suggested next steps remain information, not permission.
 
 ## Where it fits
 
-This is a governed alternative to the ordinary implementation chain. It
-composes [identity-safe-git](https://aihero.dev/skills-identity-safe-git),
-[durable-handoff](https://aihero.dev/skills-durable-handoff), and
-[code-review](https://aihero.dev/skills-code-review). See
+This is a governed alternative to the ordinary implementation chain. The
+authoring side composes
+[identity-safe-git](https://aihero.dev/skills-identity-safe-git) and
+[durable-handoff](https://aihero.dev/skills-durable-handoff), then stops for an
+independent basic, hard, or devil's-advocate review. See
 [ask-matt](https://aihero.dev/skills-ask-matt) for the whole map.
