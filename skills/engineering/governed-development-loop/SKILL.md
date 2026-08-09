@@ -57,8 +57,15 @@ If publication is authorised:
 2. Push only the authorised non-protected branch.
 3. Open or update one PR.
 4. Re-read the remote head and record its full SHA.
-5. Create a `durable-handoff` at that exact remote head.
-6. Stop for independent review.
+5. Build an `author-handback.v1` evidence packet whose changed paths exactly
+   match the live PR and whose acceptance entries state the independent oracle,
+   command, and observed result. Do not mark an unmet or unexecuted criterion
+   `PASS`.
+6. Invoke `publish-pr-handback` to validate local/remote/packet equality,
+   publish the exact-head receipt, and read it back from the hosting service.
+7. Treat only `AUTHOR_HANDBACK_PUBLICATION=PASS` as a completed handback.
+8. Create any project-required `durable-handoff`, then stop for independent
+   review.
 
 Do not self-approve, merge, enable auto-merge, bypass protection, begin a
 second task, or turn a recorded next candidate into authority.
