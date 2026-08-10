@@ -32,5 +32,6 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[devils-advocate-review](./devils-advocate-review/SKILL.md)** — Tries to disprove developer and prior-reviewer claims with independent counterexamples before approval.
 - **[governed-development-loop](./governed-development-loop/SKILL.md)** — Execute one authorised, review-gated task from pinned state to an independently reviewable remote head.
 - **[governance-author](./governance-author/SKILL.md)** — Turn a maintainer decision into a bounded governance promotion without repository-ownership drift or role self-promotion.
+- **[publish-pr-handback](./publish-pr-handback/SKILL.md)** — Validate and atomically publish a complete exact-head author handback.
 - **[identity-safe-git](./identity-safe-git/SKILL.md)** — Verify OS, Git-host, author, workspace, and branch identity before repository mutations.
 - **[resolving-merge-conflicts](./resolving-merge-conflicts/SKILL.md)** — Work through an in-progress git merge or rebase conflict hunk by hunk, resolving by intent traced to each side's primary source, then finish the operation — never `--abort`.

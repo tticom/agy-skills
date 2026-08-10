@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish PR Handback"
+  short_description: "Publish an atomic exact-head author handback"
+  default_prompt: "Use $publish-pr-handback to validate and publish this PR author handback at the exact live head."
