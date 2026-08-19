@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # NOTE: This is a dev-only script, intended for use by maintainers of this repo.
-# It is not a supported installer. Modifications to it — or requests for
-# modifications — will not be approved.
+# It is not a supported installer. Modifications to it, or requests for
+# modifications, will not be approved.
 #
 # Links all skills in the repository into the local skill directories used by
 # each agent harness:

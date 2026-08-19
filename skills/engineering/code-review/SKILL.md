@@ -1,50 +1,39 @@
 ---
 name: code-review
-description: Perform a basic, exact-head pull-request review for correctness, specification compliance, repository standards, code sanity, and regression safety. Use for ordinary PR review, re-review, inline findings, or a merge-readiness verdict when a hard evidence or devil's-advocate review was not requested. The reviewer may publish only review metadata and must never modify the reviewed repository.
+description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
 ---
 
 # Basic code review
 
-Review one immutable revision. Inspect code and tests, publish line-specific
-findings where useful, and always publish one exact-head PR summary comment.
-Do not implement fixes.
+- **Standards**: does the code conform to this repo's documented coding standards?
+- **Spec**: does the code faithfully implement the originating issue / spec?
 
 Require a live PR. If only a local branch or uncommitted diff exists, return a
 pre-publication assessment or ask the author to publish it; do not open or alter
 a PR under the reviewer role.
 
-Read [references/reviewer-role-firewall.md](references/reviewer-role-firewall.md)
-and [references/review-state-protocol.md](references/review-state-protocol.md)
-completely before inspecting a live PR.
+The issue tracker should have been provided to you. If `docs/agents/issue-tracker.md` is missing, tell the user to run `/setup-matt-pocock-skills`.
 
 ## 1. Establish reviewer authority
 
 Resolve the Git-host identity and run the role gate:
 
-```bash
-python skills/engineering/identity-safe-git/scripts/role_authority_gate.py \
-  --actor "$(gh api user --jq .login)" \
-  --operation review-metadata \
-  --repo <owner/repo> --pr <number> --pr-author <live-pr-author>
-```
+Whatever the user said is the fixed point (a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.). If they didn't specify one, ask for it.
 
 Stop if the reviewer is also the PR author, the role gate fails, the workspace
 is not the assigned review workspace, or repository policy requires a stronger
 review level.
 
-Use a clean dedicated review worktree in detached-HEAD state. Record its
-initial `git status --porcelain=v1 --untracked-files=all`. It must be empty.
-Keep probes and notes outside the reviewed repository, preferably under a
-directory returned by `mktemp -d`.
+Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside two parallel sub-agents.
 
 ## 2. Pin the exact live revision
 
 Query the hosting service for:
 
-- repository and PR number;
-- full live head and base object IDs;
-- PR author, state, changed paths, commits, reviews, threads, and comments;
-- required author handback and its full pinned SHA.
+1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.), fetched via the workflow in `docs/agents/issue-tracker.md`.
+2. A path the user passed as an argument.
+3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
+4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
 
 Fetch the head object without merging it. Check it out detached in the review
 worktree. Require exact equality between the initial live head, handback head
@@ -55,17 +44,25 @@ python skills/engineering/code-review/scripts/verify_review_head.py \
   --expected <full-live-head> --worktree <review-worktree>
 ```
 
-Compute the review only as `<base-object-id>...<live-head-object-id>`. A branch
-name, chat summary, PR body, stale checkout, or abbreviated SHA is not proof of
-the reviewed contents.
+On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 
-For re-review, first inspect the complete delta from the last formally reviewed
-head to the new live head. Prior findings and approvals are historical context,
-not current evidence.
+- **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
+- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation. Like any standard here, skip anything tooling already enforces.
 
 ## 3. Establish the contract
 
-Read repository-owned authority before judging the diff:
+- **Mysterious Name**: a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design's murky.
+- **Duplicated Code**: the same logic shape appears in more than one hunk or file in the change. → extract the shared shape, call it from both.
+- **Feature Envy**: a method that reaches into another object's data more than its own. → move the method onto the data it envies.
+- **Data Clumps**: the same few fields or params keep travelling together (a type wanting to be born). → bundle them into one type, pass that.
+- **Primitive Obsession**: a primitive or string standing in for a domain concept that deserves its own type. → give the concept its own small type.
+- **Repeated Switches**: the same `switch`/`if`-cascade on the same type recurs across the change. → replace with polymorphism, or one map both sites share.
+- **Shotgun Surgery**: one logical change forces scattered edits across many files in the diff. → gather what changes together into one module.
+- **Divergent Change**: one file or module is edited for several unrelated reasons. → split so each module changes for one reason.
+- **Speculative Generality**: abstraction, parameters, or hooks added for needs the spec doesn't have. → delete it; inline back until a real need shows.
+- **Message Chains**: long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
+- **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
+- **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
 1. `AGENTS.md`, review rules, contribution rules, and security/privacy policy;
 2. active-task scope and allowed paths when present;
@@ -73,25 +70,13 @@ Read repository-owned authority before judging the diff:
 4. PR body and author handback as claims, never as authority over repository
    policy.
 
-If a material requirement cannot be located, report `CANNOT_VERIFY`; do not
-invent it.
+**Standards sub-agent prompt** should include:
 
-## 4. Inspect the complete change
+- The full diff command and commit list.
+- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
+- The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
 
-Read the raw diff and relevant unchanged callers/consumers. Check at least:
-
-- correctness on success, failure, absence, ambiguity, and boundary paths;
-- API, schema, serialization, migration, and backward-compatibility contracts;
-- error handling, cleanup, idempotence, ordering, duplicate handling, and
-  concurrency where applicable;
-- security, privacy, secrets, path handling, injection, and unsafe external
-  effects;
-- performance or unbounded work introduced on production paths;
-- scope compliance, dead code, accidental artifacts, debugging output, and
-  surprising dependencies;
-- maintainability: names, cohesion, duplication, hidden coupling, and whether
-  the changed abstraction is understandable at its call sites;
-- tests for every changed behavior and a regression test for every bug fix.
+**Spec sub-agent prompt** should include:
 
 Run the smallest relevant checks first, then the repository-mandated suite.
 Do not treat a developer summary or aggregate pass count as execution evidence.
@@ -104,13 +89,9 @@ claims are material, escalate to `$hard-review`.
 
 ## 5. Form findings and verdict
 
-Use only actionable findings:
+Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the two axes are deliberately separate (see _Why two axes_).
 
-- `P0`: catastrophic or security-critical; must block;
-- `P1`: material correctness, contract, privacy, or data-loss defect; must block;
-- `P2`: meaningful maintainability or evidence weakness; block when required by
-  policy or when it can hide incorrect behavior;
-- `P3`: non-blocking suggestion.
+End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
 
 Each blocking finding must identify the exact path and line/hunk, observed or
 deduced failure, governing requirement, and smallest acceptable correction.
