@@ -21,6 +21,19 @@ Create a JSON file with this shape:
   "head": "40-character SHA",
   "base": "40-character SHA",
   "changed_paths": ["path/from/live/pr"],
+  "validation_runs": [
+    {
+      "command": "Repository-mandated command actually completed",
+      "status": "PASS",
+      "exit_code": 0,
+      "passed": 10,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "deselected": 0
+    }
+  ],
   "acceptance": [
     {
       "criterion": "Exact required observable",
@@ -50,6 +63,13 @@ Use `FAIL` or `NOT_RUN` while diagnosing locally, but the publisher refuses
 either status for a review-ready handback. Resolve the criterion or report a
 blocked state without publishing `AWAITING_GOVERNANCE_REVIEW`.
 
+`validation_runs` must enumerate every command mandated by the repository or
+task. Do not omit a failing command, replace the full suite with a focused
+selection, or call collection/launch evidence a completed run. A run is `PASS`
+only when it finished at the packet head with exit code zero and zero recorded
+failures/errors. Record skips, xfails, and deselections literally and explain
+their authority in `remaining_risks` whenever they are non-zero.
+
 ## Publish atomically
 
 Run from the clean author worktree:
@@ -70,6 +90,7 @@ The script fails closed unless:
 - the PR is open and local branch/head equal the live branch/head;
 - the worktree is clean;
 - packet repository, PR, base, head, and changed paths equal live GitHub state;
+- every declared validation run completed successfully with explicit totals;
 - every acceptance entry is complete and `PASS`;
 - the head remains unchanged through publication; and
 - GitHub returns the exact generated marker and body.

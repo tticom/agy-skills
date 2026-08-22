@@ -56,6 +56,23 @@ class ReviewerSkillContractTest(unittest.TestCase):
         self.assertIn("unconditional no-merge", firewall)
         self.assertIn("current, explicit instruction from `tticom`", firewall)
 
+    def test_false_success_regressions_are_explicitly_blocked(self):
+        basic = read("code-review/SKILL.md")
+        hard = read("hard-review/SKILL.md")
+        devil = read("devils-advocate-review/SKILL.md")
+        implement = read("implement/SKILL.md")
+
+        self.assertIn("detached exact-head checkout", basic)
+        self.assertIn("`NOT_RUN`", basic)
+        self.assertIn("`git diff --check`", basic)
+        self.assertIn("generator", hard.lower())
+        self.assertIn("constant-output implementation", hard)
+        self.assertIn("input is untracked", devil)
+        self.assertIn("Prove external data assumptions first", implement)
+        self.assertIn("Trace the final production effect", implement)
+        self.assertIn("git status --porcelain=v1 --untracked-files=all", implement)
+        self.assertIn("do not misrepresent it as undefined-name analysis", implement)
+
 
 if __name__ == "__main__":
     unittest.main()

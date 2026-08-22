@@ -42,6 +42,19 @@ explicit rationale. Every changed domain or conversion behavior requires a
 data-bearing test derived from a genuine source and reaching the changed
 production seam. A green synthetic-only suite is a blocking false-success mode.
 
+Classify provenance by construction, not filename or author label. A PDF,
+image, JSON file, or oracle created by a fixture generator for the change is
+`SYNTHETIC_OR_MOCKED`; committing the generated binary does not make it a real
+source. Expected output written by the same generator or derived from the
+implementation is circular, not independent. When the task forbids synthetic
+evidence, introducing it is itself a specification violation even if separate
+real-source evidence also exists.
+
+Inventory skips, xfails, deselections, and test deletions in the head delta.
+Compare their guarded behavior with the base head. A new or broadened
+suppression that hides an affected failure is blocking; a green aggregate
+obtained through suppression is evidence of false success.
+
 If a private in-situ test skips in public CI, verify the skip guard is narrow
 and explicit, then personally run it in the authorized private-fixture
 environment. A skipped test is not approval evidence.
@@ -107,6 +120,12 @@ Verify the existing real-data assertion would fail under that defect. Inspect:
 - ordering, duplicate, scale, cardinality, and neighboring-item competition;
 - fallback behavior and whether fallback masks loss of primary evidence;
 - round-trip or semantic output, not only intermediate metadata.
+
+For acceptance claims, explicitly challenge a constant-output implementation
+and require a negative control differing only in the behavior-controlling fact.
+Also inspect the changed production function and its direct caller for
+undefined names, early returns, unreachable initialization, and mocked seams;
+targeted green tests do not discharge this code-sanity check.
 
 Run the assertion-smell scanner on changed tests:
 

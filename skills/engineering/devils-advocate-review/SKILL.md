@@ -13,6 +13,14 @@ and the comment-only reviewer firewall.
 Begin with the provisional verdict `CHANGES_REQUESTED`. The implementation must
 earn its way out one claim at a time.
 
+Before reading the author's claimed status, inspect exact-head CI conclusions,
+validate from a clean detached checkout, inventory test suppression/deletion,
+and map source requirements to the diff. If an author says `passed`, `green`,
+`fixed`, or `addressed` while a required command failed or was not completed,
+an input is untracked, evidence is synthetic where prohibited, or an obligation
+is absent, record the contradiction as blocking and distrust every remaining
+claim until independently executed.
+
 ## 1. Treat advocacy as hostile evidence
 
 Assume these are wrong until independently verified:
@@ -90,6 +98,8 @@ consumer.
 Approve only when all of the following are true:
 
 - every basic and hard-review gate passes;
+- every mandated validation command completed at the exact head with exit code
+  zero and no unexplained failure, error, skip, or xfail;
 - every developer claim has a complete production-and-oracle trace;
 - every relevant prior reviewer claim has been independently challenged;
 - no disconfirmation attempt proves a material claim wrong;

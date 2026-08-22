@@ -39,6 +39,12 @@ repair unrelated state, or use another identity's clone.
 5. Stop rather than broaden scope when a required edit falls outside the
    approved paths or changes frozen behaviour.
 
+For logic based on an external library, format, API, or schema, require a
+versioned scratch-probe receipt from representative live data before accepting
+the heuristic. For user-facing pipeline changes, require a trace from the
+normal entrypoint through every changed handoff to the final observable; helper
+output or an isolated unit test is not completion evidence.
+
 A task may produce one implementation PR or one governance PR, never both
 implicitly. Repository changes require their own explicit authority.
 
@@ -48,6 +54,13 @@ Check every changed path is authorised, every claim is proved at the exact
 branch head, tests exercise required behaviour, required artifacts are fresh
 and coherent, and untested risks are stated. Use `unproven` instead of filling
 an evidence gap with inference.
+
+Run author checks from the committed head with no test-relevant untracked
+files. Include `git status --porcelain=v1 --untracked-files=all`,
+`git diff --check`, repository-declared compile/lint/type/static checks, focused
+tests, the complete mandated suite, and a final-output acceptance run. A clean
+aggregate produced by skips, xfails, missing fixtures, or an author-only dirty
+worktree fails this challenge.
 
 ## Publish and stop
 
@@ -61,6 +74,11 @@ If publication is authorised:
    match the live PR and whose acceptance entries state the independent oracle,
    command, and observed result. Do not mark an unmet or unexecuted criterion
    `PASS`.
+   Include every mandated validation command, not merely author-selected
+   commands. Record completion, exit code, and test totals. Any failed,
+   timed-out, partial, or unrun command prevents a review-ready handback.
+   Inventory skips, xfails, deselections, deleted tests, and required artifacts;
+   prove every acceptance input is tracked at the exact head.
 6. Invoke `publish-pr-handback` to validate local/remote/packet equality,
    publish the exact-head receipt, and read it back from the hosting service.
 7. Treat only `AUTHOR_HANDBACK_PUBLICATION=PASS` as a completed handback.

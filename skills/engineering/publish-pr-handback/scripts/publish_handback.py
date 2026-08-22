@@ -26,6 +26,7 @@ REQUIRED_PACKET_KEYS = {
     "head",
     "base",
     "changed_paths",
+    "validation_runs",
     "acceptance",
     "review_findings",
     "remaining_risks",
@@ -139,6 +140,24 @@ def validate_packet(
         raise HandbackError("packet changed paths do not exactly match the live pull request")
     _require_nonempty_text(packet, "task", "packet")
 
+    validation_runs = packet["validation_runs"]
+    if not isinstance(validation_runs, list) or not validation_runs:
+        raise HandbackError("packet requires at least one completed validation run")
+    for index, item in enumerate(validation_runs, start=1):
+        if not isinstance(item, dict):
+            raise HandbackError(f"validation run {index} must be an object")
+        _require_nonempty_text(item, "command", f"validation run {index}")
+        if item.get("status") != "PASS" or item.get("exit_code") != 0:
+            raise HandbackError(f"validation run {index} did not complete successfully")
+        for key in ("passed", "failed", "errors", "skipped", "xfailed", "deselected"):
+            value = item.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise HandbackError(
+                    f"validation run {index} requires non-negative integer {key}"
+                )
+        if item["failed"] or item["errors"]:
+            raise HandbackError(f"validation run {index} contains failures or errors")
+
     acceptance = packet["acceptance"]
     if not isinstance(acceptance, list) or not acceptance:
         raise HandbackError("packet requires at least one acceptance item")
@@ -181,6 +200,13 @@ def render_handback(packet: dict[str, Any], *, state: str, packet_sha: str) -> s
         )
         for index, item in enumerate(packet["acceptance"], start=1)
     )
+    validation = "\n".join(
+        f"- `{item['command']}`: {item['status']} (exit {item['exit_code']}; "
+        f"pass={item['passed']} fail={item['failed']} error={item['errors']} "
+        f"skip={item['skipped']} xfail={item['xfailed']} "
+        f"deselected={item['deselected']})"
+        for item in packet["validation_runs"]
+    )
     findings = packet["review_findings"]
     finding_text = "None (initial handback)." if not findings else "\n\n".join(
         "\n".join(
@@ -214,6 +240,10 @@ def render_handback(packet: dict[str, Any], *, state: str, packet_sha: str) -> s
             "## Acceptance evidence",
             "",
             acceptance,
+            "",
+            "## Validation runs",
+            "",
+            validation,
             "",
             "## Review finding dispositions",
             "",
