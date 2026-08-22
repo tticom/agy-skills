@@ -61,6 +61,18 @@ Once done, run an author self-check against the specification and repository
 validation contract. Do not invoke a reviewer skill, publish a formal review,
 or approve your own work.
 
+
+### Automated Code Smell Detection (Ruff)
+To avoid manual toil and reliably detect unused code, dead branches, and excessive complexity (which often indicates 'Feature Envy' or 'Divergent Change'), you **must** run `ruff` on the codebase before handback:
+```bash
+# Auto-fix trivial smells
+.venv/bin/ruff check --fix src/ tests/
+
+# Evaluate remaining complex smells
+.venv/bin/ruff check src/ tests/
+```
+Use the output of `ruff` to inform your code-smell ledger. If `ruff` flags high cyclomatic complexity (C901) or unused variables (F841), you must either refactor the code to remove the smell, or formally justify it in the ledger.
+
 Read and apply the
 [code-smell contract](../code-review/references/code-smell-contract.md) to every
 changed production and test path. Record each candidate as `NOT_PRESENT`,
