@@ -34,6 +34,19 @@ def packet() -> dict:
         "head": HEAD,
         "base": BASE,
         "changed_paths": ["src/a.py", "tests/test_a.py"],
+        "validation_runs": [
+            {
+                "command": "python -m pytest",
+                "status": "PASS",
+                "exit_code": 0,
+                "passed": 10,
+                "failed": 0,
+                "errors": 0,
+                "skipped": 0,
+                "xfailed": 0,
+                "deselected": 0,
+            }
+        ],
         "acceptance": [
             {
                 "criterion": "Produces exactly 43 measures",
@@ -116,6 +129,31 @@ def test_packet_rejects_exit_code_without_observed_semantics() -> None:
         validate(value)
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("status", "NOT_RUN", "did not complete"),
+        ("exit_code", 1, "did not complete"),
+        ("failed", 1, "failures or errors"),
+        ("errors", 1, "failures or errors"),
+    ],
+)
+def test_packet_rejects_incomplete_or_failing_validation(
+    field: str, value: object, message: str
+) -> None:
+    evidence = packet()
+    evidence["validation_runs"][0][field] = value
+    with pytest.raises(MODULE.HandbackError, match=message):
+        validate(evidence)
+
+
+def test_packet_requires_validation_run() -> None:
+    evidence = packet()
+    evidence["validation_runs"] = []
+    with pytest.raises(MODULE.HandbackError, match="at least one completed"):
+        validate(evidence)
+
+
 def test_changed_path_query_paginates_without_new_gh_flags(monkeypatch) -> None:
     pages = [
         [{"filename": f"path/{index}.py"} for index in range(100)],
@@ -141,5 +179,7 @@ def test_rendered_handback_is_exact_head_and_complete() -> None:
     assert f"<!-- author-handback:{HEAD} -->" in body
     assert f"- Head: `{HEAD}`" in body
     assert "## Acceptance evidence" in body
+    assert "## Validation runs" in body
+    assert "pass=10 fail=0 error=0" in body
     assert "43 measures; no partial-grouping warning" in body
     assert body.endswith("AWAITING_GOVERNANCE_REVIEW")

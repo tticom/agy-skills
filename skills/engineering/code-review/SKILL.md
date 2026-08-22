@@ -44,6 +44,13 @@ python skills/engineering/code-review/scripts/verify_review_head.py \
   --expected <full-live-head> --worktree <review-worktree>
 ```
 
+Require a clean checkout before validation. List untracked files and compare
+every fixture or artifact used by tests with `git ls-files`; an input that
+exists only in the author's dirty worktree is absent from the reviewed change.
+Run tests only from the detached exact-head checkout, never from the author's
+working directory. If the clean checkout cannot reproduce the claimed command,
+request changes or return `CANNOT_VERIFY` as appropriate.
+
 On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 
 - **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
@@ -81,6 +88,22 @@ On top of whatever the repo documents, the Standards axis always carries the **s
 Run the smallest relevant checks first, then the repository-mandated suite.
 Do not treat a developer summary or aggregate pass count as execution evidence.
 Record exact commands, exit codes, and observed failures.
+
+Independently enumerate the mandated commands from the spec and repository
+rules. Record each as `COMPLETED`, `FAILED`, `NOT_RUN`, or `TIMED_OUT`, with its
+exit code and pass/fail/error/skip/xfail totals. Never translate a partial
+selection, collection-only output, skipped module, still-running process, or
+missing receipt into success. A required failure/error blocks approval.
+
+Run `git diff --check` and the repository's declared compile, lint, type, and
+static-analysis checks. For Python changes, `python -m compileall` is a useful
+syntax baseline when available, but it does not replace production-path
+execution or justify inventing an undeclared mypy gate.
+
+Build a requirement-conformance matrix before the verdict. Every obligation
+and prohibition must map to the actual diff, a final observable, and executed
+evidence. A clean implementation of behavior that deviates from the contract
+is `CHANGES_REQUESTED`.
 
 This basic review verifies ordinary test coverage but does not certify test-data
 provenance or fixture independence. If conversion fidelity, parsers, OMR,
