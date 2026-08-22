@@ -61,12 +61,24 @@ Once done, run an author self-check against the specification and repository
 validation contract. Do not invoke a reviewer skill, publish a formal review,
 or approve your own work.
 
+Read and apply the
+[code-smell contract](../code-review/references/code-smell-contract.md) to every
+changed production and test path. Record each candidate as `NOT_PRESENT`,
+`SUSPECTED`, `CONFIRMED`, or `EXEMPT`, with exact evidence and impact. Under a
+no-code-smells policy, do not hand back while a diff-introduced or materially
+worsened `CONFIRMED` smell remains. Passing tests do not waive dead code, test
+theatre, exception-as-fallback, circular evidence, weak assertions, undefined
+heuristics, or another confirmed smell. A suspected smell requires inspection,
+not speculative refactoring; an exemption requires a cited repository rule or
+task requirement.
+
 Build a requirement ledger before handback. For every obligation record the
 changed production path, final observable, test node, input provenance,
 independent oracle, exact-head command, and observed result. A deviation,
 missing production-path test, unexecuted command, synthetic-only evidence
 where real-source evidence is required, or non-independent oracle leaves the
 requirement unmet. Do not relabel it as a limitation while claiming completion.
+Attach the smell ledger to this self-check when any smell candidate was found.
 
 Immediately before publication, run a clean-head pre-flight:
 

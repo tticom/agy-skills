@@ -73,6 +73,28 @@ class ReviewerSkillContractTest(unittest.TestCase):
         self.assertIn("git status --porcelain=v1 --untracked-files=all", implement)
         self.assertIn("do not misrepresent it as undefined-name analysis", implement)
 
+    def test_code_smells_have_operational_definitions_and_blocking_policy(self):
+        basic = read("code-review/SKILL.md")
+        implement = read("implement/SKILL.md")
+        smells = read("code-review/references/code-smell-contract.md")
+
+        for phrase in (
+            "Dead code",
+            "Test theatre",
+            "Exception-as-fallback",
+            "Stringly typed classification / substring trap",
+            "Magic number or threshold",
+            "Over-broad exception oracle",
+            "Weak or non-discriminating assertion",
+        ):
+            self.assertIn(phrase, smells)
+        for status in ("`NOT_PRESENT`", "`SUSPECTED`", "`CONFIRMED`", "`EXEMPT`"):
+            self.assertIn(status, smells)
+        self.assertIn("blocks developer handback and reviewer approval", smells)
+        self.assertIn("code-smell contract", basic)
+        self.assertIn("`APPROVE` is forbidden", basic)
+        self.assertIn("do not hand back", implement)
+
 
 if __name__ == "__main__":
     unittest.main()
