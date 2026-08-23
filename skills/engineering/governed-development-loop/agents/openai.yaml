@@ -1,6 +1,0 @@
-interface:
-  display_name: "Governed Development Loop"
-  short_description: "Run bounded, review-gated development cycles"
-  default_prompt: "Use $governed-development-loop to execute the active governed task and stop at its required review gate."
-policy:
-  allow_implicit_invocation: true
