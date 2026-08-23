@@ -1,6 +1,6 @@
 ---
 name: handoff-bg
-description: Hand the current conversation off to a fresh background subagent that picks up the work immediately across Antigravity (AGY), Codex, and Claude Code.
+description: Hand the current conversation off to a fresh background subagent that picks up the work immediately across Antigravity (AGY), Codex, and Gemini Antigravity.
 argument-hint: "What will the next session be used for?"
 disable-model-invocation: true
 ---
@@ -9,7 +9,7 @@ Write a handoff summary of the current conversation so a fresh agent can continu
 
 - **In Antigravity (`agy`)**: Call `invoke_subagent` with `Role: "<descriptive name>"` and `Prompt: "<handoff summary>"`.
 - **In Codex & Agent-Skills harnesses**: Launch a background agent or sub-task seeded with the handoff summary.
-- **In Claude Code**: Execute `claude --bg --name "<descriptive name>" "<handoff summary>"`.
+- **In Gemini Antigravity**: Execute `agy bg --name "<descriptive name>" "<handoff summary>"`.
 
 Always set a descriptive name (e.g., `"Fix login bug"`) — it identifies the session in task managers and status indicators.
 

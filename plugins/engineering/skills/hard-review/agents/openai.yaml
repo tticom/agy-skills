@@ -1,4 +1,0 @@
-interface:
-  display_name: "Hard Review"
-  short_description: "Audit test provenance and fixture independence"
-  default_prompt: "Use $hard-review to review this PR with real-data evidence and fixture-coupling checks."

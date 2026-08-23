@@ -6,9 +6,9 @@ Skills are organized into bucket folders under `skills/`:
 - `in-progress/`: beta: public on purpose, feedback wanted, not shipped in the plugin
 - `deprecated/`: no longer used
 
-Every skill in `engineering/` or `productivity/` (the **promoted** buckets) must have a reference in the top-level `README.md` and an entry in `.claude-plugin/plugin.json`'s `skills` array (the Claude Code plugin ships exactly the promoted set). Skills in `misc/`, `in-progress/`, and `deprecated/` must not appear in either.
+Every skill in `engineering/` or `productivity/` (the **promoted** buckets) must have a reference in the top-level `README.md` and an entry in `.agents/plugins/plugin.json`'s `skills` array (the Gemini Antigravity plugin ships exactly the promoted set). Skills in `misc/`, `in-progress/`, and `deprecated/` must not appear in either.
 
-Install commands are copied verbatim from [.agents/install-block.md](./.agents/install-block.md). `.claude-plugin/marketplace.json` makes the repo its own single-plugin marketplace (a fallback the install block explains, not the documented route). Run `claude plugin validate . --strict` after touching either manifest. Why a Claude plugin but not (yet) a Codex one lives in [.agents/adr/0002-ship-as-a-claude-code-plugin.md](./.agents/adr/0002-ship-as-a-claude-code-plugin.md).
+Install commands are copied verbatim from [.agents/install-block.md](./.agents/install-block.md). `.agents/plugins/marketplace.json` makes the repo its own single-plugin marketplace (a fallback the install block explains, not the documented route). Run `gemini plugin validate . --strict` after touching either manifest. Why a Gemini plugin but not (yet) a Codex one lives in [.agents/adr/0002-ship-as-a-gemini-code-plugin.md](./.agents/adr/0002-ship-as-a-gemini-code-plugin.md).
 
 Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.
 
@@ -20,6 +20,6 @@ Every `SKILL.md` is either user-invoked (`disable-model-invocation: true` plus `
 
 [`ask-matt`](./skills/engineering/ask-matt/SKILL.md) is the router that maps every user-reachable skill and how they relate. The same trigger that re-syncs a docs page applies to it: whenever you add, rename, remove, or change how a user-reachable skill fits the flows, re-read `ask-matt`'s `SKILL.md` and update it so the map stays accurate: a new skill it never mentions, or a stale one it still routes to, is a router that lies.
 
-To (re)link every skill into the local harness skill directories (`~/.claude/skills`, `~/.agents/skills`), run `scripts/link-skills.sh`. Each entry is a symlink into this repo, so a `git pull` keeps installed skills current; re-run the script after adding, removing, or renaming a skill.
+To (re)link every skill into the local harness skill directories (`~/.gemini/skills`, `~/.agents/skills`), run `scripts/link-skills.sh`. Each entry is a symlink into this repo, so a `git pull` keeps installed skills current; re-run the script after adding, removing, or renaming a skill.
 
 No em-dashes anywhere in this repo's prose (`SKILL.md` files, docs, `README.md`, `CHANGELOG.md`, ADRs, changesets, code comments). Where a sentence reaches for one, rewrite it instead with a comma, colon, period, parentheses, or a conjunction, whichever the sentence actually wants; never do a blind character substitution.

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Devils Advocate Review"
-  short_description: "Try to disprove every implementation claim"
-  default_prompt: "Use $devils-advocate-review to challenge every claim and prior review before deciding this PR."

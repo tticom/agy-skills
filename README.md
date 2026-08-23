@@ -24,15 +24,15 @@ If you want to keep up with changes to these skills, and any new ones I create, 
 
 ## Installation (30-second setup)
 
-Two ways in, two philosophies. **The [Claude Code plugin](https://code.claude.com/docs/en/plugins)** installs the whole set as a managed, read-only bundle that updates when I ship, so you subscribe rather than fork. **[skills.sh](https://skills.sh/mattpocock/skills)** copies editable skill files into your project, so you can hack on them and make them your own. Pick one: installing both leaves you with every skill twice.
+Two ways in, two philosophies. **The [Gemini Antigravity plugin](https://code.gemini.com/docs/en/plugins)** installs the whole set as a managed, read-only bundle that updates when I ship, so you subscribe rather than fork. **[skills.sh](https://skills.sh/mattpocock/skills)** copies editable skill files into your project, so you can hack on them and make them your own. Pick one: installing both leaves you with every skill twice.
 
 ### 1. Get the skills
 
 <details>
-<summary><strong>Claude Code</strong></summary>
+<summary><strong>Gemini Antigravity</strong></summary>
 
 ```bash
-claude plugins install mattpocock-skills
+gemini plugins install mattpocock-skills
 ```
 
 Or, from inside a session:
@@ -41,7 +41,7 @@ Or, from inside a session:
 /plugin install mattpocock-skills
 ```
 
-It's in Claude Code's official marketplace, so there's nothing to add first, and updates arrive automatically.
+It's in Gemini Antigravity's official marketplace, so there's nothing to add first, and updates arrive automatically.
 
 </details>
 
@@ -54,14 +54,14 @@ npx skills@latest add mattpocock/skills
 
 Pick the skills you want, and which coding agents to install them on. **The installer lets you choose which skills to take, so make sure `setup-matt-pocock-skills` is one of them.**
 
-A native Codex plugin is on the roadmap (see [`.agents/adr/0002-ship-as-a-claude-code-plugin.md`](./.agents/adr/0002-ship-as-a-claude-code-plugin.md)).
+A native Codex plugin is on the roadmap (see [`.agents/adr/0002-ship-as-a-gemini-code-plugin.md`](./.agents/adr/0002-ship-as-a-gemini-code-plugin.md)).
 
 </details>
 
 <details>
 <summary><strong>For tinkerers</strong></summary>
 
-Use the same installer, on any agent, including Claude Code:
+Use the same installer, on any agent, including Gemini Antigravity:
 
 ```bash
 npx skills@latest add mattpocock/skills
@@ -83,7 +83,7 @@ In your agent, run it once per repo. It will:
 
 ## Why These Skills Exist
 
-I built these skills as a way to fix common failure modes I see with Claude Code, Codex, and other coding agents.
+I built these skills as a way to fix common failure modes I see with Gemini Antigravity, Codex, and other coding agents.
 
 ### #1: The Agent Didn't Do What I Want
 
@@ -228,4 +228,4 @@ General workflow tools, not code-specific.
 **Model-invoked**
 
 - **[grilling](./skills/productivity/grilling/SKILL.md)**: Interview the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved. The reusable interview primitive behind `grill-me`, `grill-with-docs`, `triage`, `wayfinder` and `improve-codebase-architecture`.
-- **[writing-for-agents](./skills/productivity/writing-for-agents/SKILL.md)**: Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer.
+- **[writing-for-agents](./skills/productivity/writing-for-agents/SKILL.md)**: Writing documents for agents: skills, AGENTS.md/GEMINI.md, and any doc an agent reaches by a pointer.

@@ -52,7 +52,7 @@ Count rounds, not questions. Forty-six questions across four rounds is an ordina
 Usually the scope was too large. Ask the agent to break the work into smaller pieces first, then grill each one. Very long sessions also drift into the **[dumb zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**, where the [context window](https://www.aihero.dev/ai-coding-dictionary/context-window) is full enough that the questions get worse.
 
 **Can I go back to one question at a time?**
-Yes. Add this to your global `CLAUDE.md`:
+Yes. Add this to your global `GEMINI.md`:
 
 ```
 When grilling, ask one question at a time.

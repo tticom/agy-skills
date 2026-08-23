@@ -7,7 +7,7 @@ Spin up a **background subagent** to do the research so the parent session stays
 
 - **In Antigravity (`agy`)**: Call `invoke_subagent` using `TypeName: "research"` (or `TypeName: "self"`) with `Model: "flash"` or `"pro"`.
 - **In Codex & Agent-Skills harnesses**: Spawn a background research subagent or sub-task.
-- **In Claude Code**: Launch a background agent (`claude --bg`).
+- **In Gemini Antigravity**: Launch a background agent (`agy bg`).
 
 Its job:
 

@@ -26,7 +26,7 @@ Read the project's domain glossary (`CONTEXT.md`) and any ADRs in the area you'r
 
 Then walk the codebase using a subagent:
 - **In Antigravity (`agy`)**: Call `invoke_subagent` with `TypeName: "research"` or `TypeName: "self"`.
-- **In Claude Code / Other Harnesses**: Use the `Agent` tool (`subagent_type=Explore`).
+- **In Gemini Antigravity / Other Harnesses**: Use the `Agent` tool (`subagent_type=Explore`).
 
 Don't follow rigid heuristics — explore organically and note where you experience friction:
 
@@ -43,7 +43,7 @@ Apply the **deletion test** to anything you suspect is shallow: would deleting i
 Present candidates clearly based on the active agent harness:
 
 - **In Antigravity (`agy`)**: Write a rich visual Markdown Artifact (`architecture_review.md`). Use embedded **Mermaid diagrams** (` ```mermaid `) for Before/After module structures, Markdown **carousels** (` ````carousel `) for candidate comparisons, and GitHub alerts (`> [!IMPORTANT]`, `> [!WARNING]`). The report will render directly in the AGY visual pane.
-- **In Claude Code / Standalone CLI**: Write a self-contained HTML file to the OS temp directory (`$TMPDIR` or `%TEMP%`). Open it for the user (`xdg-open`, `open`, or `start`) and state the path. See [HTML-REPORT.md](HTML-REPORT.md) for HTML scaffolding and Tailwind/Mermaid CDN patterns.
+- **In Gemini Antigravity / Standalone CLI**: Write a self-contained HTML file to the OS temp directory (`$TMPDIR` or `%TEMP%`). Open it for the user (`xdg-open`, `open`, or `start`) and state the path. See [HTML-REPORT.md](HTML-REPORT.md) for HTML scaffolding and Tailwind/Mermaid CDN patterns.
 
 For each candidate, render a card or section with:
 

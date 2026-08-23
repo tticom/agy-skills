@@ -1,4 +1,0 @@
-interface:
-  display_name: "Governance Author"
-  short_description: "Author safe governed task promotions"
-  default_prompt: "Use $governance-author to create or revise a governed task promotion."

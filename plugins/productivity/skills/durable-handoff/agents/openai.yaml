@@ -1,6 +1,0 @@
-interface:
-  display_name: "Durable Handoff"
-  short_description: "Record durable, revision-pinned project handoffs"
-  default_prompt: "Use $durable-handoff to create a durable project handoff tied to the exact remote revision."
-policy:
-  allow_implicit_invocation: true

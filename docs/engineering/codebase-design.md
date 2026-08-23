@@ -67,9 +67,9 @@ No, and the skill has held that line under repeated pushback. [Issue #95](https:
 
 It does now. For a long time it did not. The inline deep-module notes that used to live inside `tdd` were removed in v1.0 in favour of this shared skill, but the pointer replacing them was never added, so `tdd` defined "seam" for itself and referenced nothing. The gap is closed: the pointer is now in the skill, reached when the shape of the interface is the open question rather than the tests. `tdd` still owns "seam" as the boundary you *test* at; this skill owns the module shape behind it.
 
-**Does the design-it-twice pattern work outside Claude Code?**
+**Does the design-it-twice pattern work outside Gemini Antigravity?**
 
-Not cleanly. `DESIGN-IT-TWICE.md` says "spawn 3+ sub-agents in parallel using the Agent tool", which is Claude Code's [tool](https://www.aihero.dev/ai-coding-dictionary/tool) by Claude Code's name. The repo ships metadata for other [harnesses](https://www.aihero.dev/ai-coding-dictionary/harness), including Codex, and those may expose nothing under that name, so the parallel-design phase is less portable than the skill's metadata suggests. Tracked in [issue #564](https://github.com/mattpocock/skills/issues/564), open.
+Not cleanly. `DESIGN-IT-TWICE.md` says "spawn 3+ sub-agents in parallel using the Agent tool", which is Gemini Antigravity's [tool](https://www.aihero.dev/ai-coding-dictionary/tool) by Gemini Antigravity's name. The repo ships metadata for other [harnesses](https://www.aihero.dev/ai-coding-dictionary/harness), including Codex, and those may expose nothing under that name, so the parallel-design phase is less portable than the skill's metadata suggests. Tracked in [issue #564](https://github.com/mattpocock/skills/issues/564), open.
 
 **Can I add my own concepts to the glossary, such as connascence, module secrets, [progressive disclosure](https://www.aihero.dev/ai-coding-dictionary/progressive-disclosure)?**
 

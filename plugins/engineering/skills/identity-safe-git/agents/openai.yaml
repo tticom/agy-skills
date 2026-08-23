@@ -1,6 +1,0 @@
-interface:
-  display_name: "Identity-Safe Git"
-  short_description: "Enforce identity and branch-safe Git operations"
-  default_prompt: "Use $identity-safe-git to verify repository identity and apply branch-safe Git guardrails."
-policy:
-  allow_implicit_invocation: true

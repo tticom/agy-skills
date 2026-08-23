@@ -12,7 +12,7 @@ Four situations are the whole trigger:
 
 | Situation | Why a file |
 | --- | --- |
-| Swapping harness (Claude → Codex) | The new harness cannot see the old [context](https://www.aihero.dev/ai-coding-dictionary/context) |
+| Swapping harness (Gemini → Codex) | The new harness cannot see the old [context](https://www.aihero.dev/ai-coding-dictionary/context) |
 | Moving to a different directory or repo | A prototype directory is the common case |
 | Sending the work to a colleague | They need something they can read |
 | Forking a side task found mid-phase | You keep working; a second agent takes the fork |
@@ -48,13 +48,13 @@ The temp directory, which is the most-reported friction with the skill: the path
 Some environments clear temp between sessions (Codex is the reported case), and `/private/tmp` goes on reboot. If the next session isn't starting within the hour, or is starting under a different harness, copy the file somewhere durable yourself as soon as it's written. The same applies to anything the document *points at*: a dispatch that references other files in temp is a dispatch the next agent can't follow.
 
 **How do I actually hand it to the next agent?**
-Open the fresh session and point it at the path: read this file, then continue. Point at the file rather than pasting the summary into a shell command: a summary containing backticks or `$(...)` gets mangled when it's interpolated into `claude "<summary>"`, and the usual failure is silent truncation rather than an error, so the new agent starts with a quietly incomplete brief.
+Open the fresh session and point it at the path: read this file, then continue. Point at the file rather than pasting the summary into a shell command: a summary containing backticks or `$(...)` gets mangled when it's interpolated into `gemini "<summary>"`, and the usual failure is silent truncation rather than an error, so the new agent starts with a quietly incomplete brief.
 
 **Is this the same as `/branch`, `--fork-session`, or the built-in `/handoff`?**
 Analogous, not identical, and `/branch` isn't a shipped skill here; `/handoff` is the canonical name. A fork inherits an exact copy of the context; this skill produces a *targeted* compression aimed at a stated next task, in a file. Where a fork will do (same machine, same harness, same directory), a fork is less work. The file wins the moment the destination is somewhere the fork can't go.
 
-**When does something belong in `CLAUDE.md` instead?**
-Ask whether it's true next month. `CLAUDE.md` is standing context about the project, loaded into every session whether it's relevant or not. A handoff is about one piece of work in flight and is dead once that work lands. Facts that keep getting re-explained are a `CLAUDE.md` problem; a half-finished task is a handoff.
+**When does something belong in `GEMINI.md` instead?**
+Ask whether it's true next month. `GEMINI.md` is standing context about the project, loaded into every session whether it's relevant or not. A handoff is about one piece of work in flight and is dead once that work lands. Facts that keep getting re-explained are a `GEMINI.md` problem; a half-finished task is a handoff.
 
 **It captures the what, not the why.**
 A fair and repeated criticism. Two things help. Pass the argument (tell it what the next session is for) so the reasoning that bears on *that* is kept rather than flattened. And watch for confident claims the session never actually verified: "X isn't built", "Y is done". The next agent treats the document as a contract and will not re-check it, so a belief written as a fact becomes a false premise for everything that follows. Read the document before you hand it over, and downgrade anything you only assumed.

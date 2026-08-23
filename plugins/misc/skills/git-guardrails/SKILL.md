@@ -1,6 +1,6 @@
 ---
 name: git-guardrails
-description: Set up agent hooks to block dangerous git commands (push, reset --hard, clean, branch -D, etc.) before they execute across Antigravity (AGY), Codex, and Claude Code. Use when user wants to prevent destructive git operations or block git push/reset.
+description: Set up agent hooks to block dangerous git commands (push, reset --hard, clean, branch -D, etc.) before they execute across Antigravity (AGY), Codex, and Gemini Antigravity. Use when user wants to prevent destructive git operations or block git push/reset.
 ---
 
 # Setup Git Guardrails
@@ -22,7 +22,7 @@ When blocked, the agent receives a refusal message indicating it lacks authority
 ### 1. Ask scope & harness target
 
 Ask the user:
-1. Target harness: **Antigravity (`agy`)**, **Codex / Agent-Skills**, or **Claude Code**?
+1. Target harness: **Antigravity (`agy`)**, **Codex / Agent-Skills**, or **Gemini Antigravity**?
 2. Scope: **this project only** or **all projects (global)**?
 
 ### 2. Copy the hook script
@@ -37,15 +37,15 @@ Copy it to the target location based on harness and scope:
 - **Codex / Agent-Skills**:
   - Project: `.agents/hooks/block-dangerous-git.sh`
   - Global: `~/.agents/hooks/block-dangerous-git.sh`
-- **Claude Code**:
-  - Project: `.claude/hooks/block-dangerous-git.sh`
-  - Global: `~/.claude/hooks/block-dangerous-git.sh`
+- **Gemini Antigravity**:
+  - Project: `.gemini/hooks/block-dangerous-git.sh`
+  - Global: `~/.gemini/hooks/block-dangerous-git.sh`
 
 Make it executable with `chmod +x`.
 
 ### 3. Add hook to settings
 
-Add to the appropriate harness settings file (`.gemini/antigravity/settings.json`, `.agents/settings.json`, or `.claude/settings.json`):
+Add to the appropriate harness settings file (`.gemini/antigravity/settings.json`, `.agents/settings.json`, or `.gemini/config.json`):
 
 ```json
 {

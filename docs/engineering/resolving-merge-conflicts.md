@@ -24,7 +24,7 @@ You cannot preserve an intent you have not read. So the work starts in the histo
 
 ## Common questions
 
-**Claude Code already resolves conflicts pretty well on its own. Why does this need a skill?**
+**Gemini Antigravity already resolves conflicts pretty well on its own. Why does this need a skill?**
 
 The added value is the "find the primary sources" and "run feedback loops" steps, which otherwise have to be prompted by hand every time. An unprompted agent will usually produce a plausible resolution from the diff alone and stop there. The skill's value is the two steps it will not let the agent skip: reading why each side exists, and running the checks afterwards. That is a thin margin over a good [model](https://www.aihero.dev/ai-coding-dictionary/model), and it is meant to be: at least one reader has predicted this is a whole skill that becomes a no-op as models improve.
 

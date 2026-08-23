@@ -55,7 +55,7 @@ Lessons are built from **components** in `assets/`: stylesheets, quiz widgets, s
 
 ## Common questions
 
-**Where does it put the files? Mine ended up in `~/.claude/skills`.**
+**Where does it put the files? Mine ended up in `~/.gemini/skills`.**
 A real, open bug ([#377](https://github.com/mattpocock/skills/issues/377)). `SKILL.md` uses `./` for two different roots at once: `./MISSION-FORMAT.md` and its siblings really do sit next to `SKILL.md` in the installed skill, while `./lessons/`, `./reference/`, `./learning-records/` and `./assets/` are meant to be in your directory. An agent that resolves the first kind against the skill's install directory goes on to resolve the second kind there too, and writes your course into the skill folder. Check where the first lesson landed before you build on it, and name the directory explicitly when you start rather than relying on "the current directory" being understood.
 
 **Do I stay in one session, or start a new one per lesson?**
@@ -77,7 +77,7 @@ No to the first, and not reliably to the second. Spacing and interleaving are pr
 No, and the non-coding use is the larger part of the record: Korean, Japanese formal register, piano, guitar, board game design, OpenSCAD, film plots, Azure and CCNA certifications, university exams, and children of eight and ten getting printable books on escape rooms and fire salamanders. Nothing in the skill is programming-specific: mission, resources, zone of proximal development and drill work the same way in any domain. Within code, the strongest reported use is not learning a language from scratch but getting oriented in an unfamiliar codebase or a new team's stack.
 
 **Which model should I run it with?**
-There is no canonical answer, and the reported differences are large. Higher [reasoning effort](https://www.aihero.dev/ai-coding-dictionary/effort) has been reported to produce noticeably better lessons than the medium setting. One user ran the same skill through Copilot CLI with Codex and got a single 30-line HTML card where Claude Code produced a full lesson. It runs unmodified in Claude Cowork, subject to whether your organisation allows skills to be added there. If the lessons come out thin, change model, [harness](https://www.aihero.dev/ai-coding-dictionary/harness) or effort before rewriting your prompt.
+There is no canonical answer, and the reported differences are large. Higher [reasoning effort](https://www.aihero.dev/ai-coding-dictionary/effort) has been reported to produce noticeably better lessons than the medium setting. One user ran the same skill through Copilot CLI with Codex and got a single 30-line HTML card where Gemini Antigravity produced a full lesson. It runs unmodified in Gemini Cowork, subject to whether your organisation allows skills to be added there. If the lessons come out thin, change model, [harness](https://www.aihero.dev/ai-coding-dictionary/harness) or effort before rewriting your prompt.
 
 ## It's working if
 
