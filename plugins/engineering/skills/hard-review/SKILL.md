@@ -11,7 +11,7 @@ checks, code-sanity review, inline comments, mandatory PR summary, and reviewer
 role firewall. This skill only adds gates; it never relaxes the basic review.
 
 Read
-[the evidence and falsification protocol](../code-review/references/evidence-falsification.md)
+[the evidence and falsification protocol](../../rules/AGENTS.md)
 completely before evaluating tests or empirical claims.
 
 ## 1. Inventory changed behavior and tests
