@@ -1,3 +1,5 @@
 {
-  "name": "agy-engineering-kit"
+  "name": "agy-engineering-kit",
+  "version": "1.0.0",
+  "description": "Daily code work skills and workflows, enforcing strict accuracy and architectural standards for Gemini Antigravity."
 }

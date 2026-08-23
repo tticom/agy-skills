@@ -4,7 +4,7 @@ Skills I use daily for code work.
 
 ## User-invoked
 
-Reachable only when you type them (Gemini Antigravity: `disable-model-invocation: true`; Codex: `policy.allow_implicit_invocation: false` in `agents/openai.yaml`).
+Reachable only when you type them (set `disable-model-invocation: true` in the skill frontmatter).
 
 - **[ask-matt](./ask-matt/SKILL.md)**: Ask which skill or flow fits your situation. A router over the user-invoked skills in this repo.
 - **[grill-with-docs](./grill-with-docs/SKILL.md)**: Grilling session that also builds your project's domain model, sharpening terminology and updating `CONTEXT.md` and ADRs inline.

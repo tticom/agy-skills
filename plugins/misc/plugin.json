@@ -1,3 +1,5 @@
 {
-  "name": "agy-misc-kit"
+  "name": "agy-misc-kit",
+  "version": "1.0.0",
+  "description": "Miscellaneous and experimental skills for Gemini Antigravity."
 }
