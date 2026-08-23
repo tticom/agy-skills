@@ -9,7 +9,7 @@ import re
 
 REPO = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
-NEVER_MERGE = {"tticom-gov", "tticom-automation"}
+NEVER_MERGE = {"tticom-gov", "tticomgov-code", "tticom-automation"}
 REVIEW_IDENTITIES = NEVER_MERGE | {"tticom-codex", "tticom"}
 
 
