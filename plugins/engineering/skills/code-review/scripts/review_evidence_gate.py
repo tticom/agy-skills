@@ -38,6 +38,15 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
     if packet.get("verdict") != "APPROVE":
         raise EvidenceError("gate is only valid for verdict APPROVE")
 
+    evidence_scope = packet.get("evidence_scope", "domain")
+    if evidence_scope not in {"domain", "governance_control_plane"}:
+        raise EvidenceError(
+            "evidence_scope must be domain or governance_control_plane"
+        )
+    if evidence_scope == "governance_control_plane":
+        text(packet.get("inapplicability_rationale"), "inapplicability_rationale")
+        text(packet.get("control_plane_oracle"), "control_plane_oracle")
+
     review_head = full_sha(packet.get("review_head"), "review_head")
     if review_head != expected_head:
         raise EvidenceError("review_head does not equal --expected-head")
@@ -204,7 +213,17 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
             text(item.get(field), f"test_evidence[{index}].{field}")
         if full_sha(item.get("inspected_head"), f"test_evidence[{index}].inspected_head") != review_head:
             raise EvidenceError(f"test_evidence[{index}] was not inspected at review_head")
-        if high_risk or devils_advocate:
+        if (high_risk or devils_advocate) and evidence_scope == "governance_control_plane":
+            if item.get("data_class") != "CONTROL_PLANE":
+                raise EvidenceError(
+                    f"test_evidence[{index}] must use CONTROL_PLANE evidence"
+                )
+            text(item.get("oracle"), f"test_evidence[{index}].oracle")
+            if item.get("oracle_independent") is not True:
+                raise EvidenceError(
+                    f"test_evidence[{index}].oracle_independent must be true"
+                )
+        elif high_risk or devils_advocate:
             data_class = text(item.get("data_class"), f"test_evidence[{index}].data_class")
             if data_class not in {"REAL_SOURCE_END_TO_END", "REAL_SOURCE_EXTRACT"}:
                 raise EvidenceError(
@@ -217,7 +236,28 @@ def validate(packet: dict[str, Any], *, prior_overturns: int, high_risk: bool,
                     f"test_evidence[{index}].oracle_independent must be true"
                 )
 
-    if high_risk or devils_advocate:
+    if (high_risk or devils_advocate) and evidence_scope == "governance_control_plane":
+        if packet.get("real_artifacts_exercised") != []:
+            raise EvidenceError(
+                "governance_control_plane packets must declare no real artifacts"
+            )
+        coupling = packet.get("fixture_coupling")
+        if not isinstance(coupling, dict):
+            raise EvidenceError("fixture_coupling must be an object")
+        if coupling.get("scanner_result") != "NOT_APPLICABLE":
+            raise EvidenceError(
+                "governance_control_plane fixture coupling must be NOT_APPLICABLE"
+            )
+        if coupling.get("manual_review") is not True:
+            raise EvidenceError("fixture_coupling.manual_review must be true")
+        production_paths = coupling.get("production_paths")
+        if not isinstance(production_paths, list) or not production_paths:
+            raise EvidenceError("fixture_coupling.production_paths must be non-empty")
+        for index, path in enumerate(production_paths):
+            text(path, f"fixture_coupling.production_paths[{index}]")
+        if coupling.get("fixture_identifiers_found") != []:
+            raise EvidenceError("fixture_coupling.fixture_identifiers_found must be empty")
+    elif high_risk or devils_advocate:
         artifacts = packet.get("real_artifacts_exercised")
         if not isinstance(artifacts, list) or not artifacts:
             raise EvidenceError("real_artifacts_exercised must be a non-empty list")
