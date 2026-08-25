@@ -37,10 +37,14 @@ Synthetic and data-free tests carry zero acceptance weight for real-world
 behavior. A changed domain or conversion test that substitutes synthetic,
 mocked, generated, or data-free input for available real-source evidence is a
 blocking finding and must be replaced. Permit such tests only for non-domain
-infrastructure where real source data is genuinely inapplicable, and require an
-explicit rationale. Every changed domain or conversion behavior requires a
-data-bearing test derived from a genuine source and reaching the changed
-production seam. A green synthetic-only suite is a blocking false-success mode.
+infrastructure where real source data is genuinely inapplicable. For an
+approval packet, declare `evidence_scope: governance_control_plane`, provide an
+explicit `inapplicability_rationale` and `control_plane_oracle`, classify the
+test evidence as `CONTROL_PLANE`, and prove the changed dispatcher/state
+contract with independent probes. Every changed domain or conversion behavior
+still requires a data-bearing test derived from a genuine source and reaching
+the changed production seam. A green synthetic-only suite remains a blocking
+false-success mode for domain behavior.
 
 Classify provenance by construction, not filename or author label. A PDF,
 image, JSON file, or oracle created by a fixture generator for the change is
@@ -158,8 +162,12 @@ strongest false-success mode tested, and specific residual risk.
 For `APPROVE`, create the evidence packet outside the repository and publish
 through the shared wrapper with `--level hard --packet <external-packet.json>`.
 The wrapper applies the real-source and fixture-independence evidence gate
-before writing any review metadata. For blocking verdicts, omit `--packet` but
-still use the wrapper so the mandatory PR summary is published.
+before writing any review metadata. Governance/control-plane packets use the
+explicit inapplicable scope above and must declare no real artifacts plus
+`fixture_coupling.scanner_result: NOT_APPLICABLE`; they still require
+independent production-path probes and contract oracles. For blocking verdicts,
+omit `--packet` but still use the wrapper so the mandatory PR summary is
+published.
 
 The reviewer remains comment-only. Do not add tests, reports, rules, prompts,
 skills, or evidence files to the reviewed branch.

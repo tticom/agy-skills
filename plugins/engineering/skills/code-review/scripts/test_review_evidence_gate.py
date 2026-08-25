@@ -104,6 +104,53 @@ class EvidenceGateTest(unittest.TestCase):
             (4, 8),
         )
 
+    def test_governance_control_plane_packet_can_omit_real_source_evidence(self):
+        value = packet()
+        value["evidence_scope"] = "governance_control_plane"
+        value["inapplicability_rationale"] = (
+            "The reviewed behavior is a Git/GitHub control-plane state transition; "
+            "no domain source artifact enters the production path."
+        )
+        value["control_plane_oracle"] = (
+            "Exact state, identity, cleanliness, and exit-code assertions against "
+            "the dispatcher contract."
+        )
+        value["real_artifacts_exercised"] = []
+        value["fixture_coupling"] = {
+            "scanner_result": "NOT_APPLICABLE",
+            "manual_review": True,
+            "production_paths": ["scripts/score2gp_dispatch.py"],
+            "fixture_identifiers_found": [],
+        }
+        value["test_evidence"][0].update({
+            "data_class": "CONTROL_PLANE",
+            "oracle": "independent dispatcher state contract",
+            "oracle_independent": True,
+        })
+        for number in (3, 4):
+            probe = copy.deepcopy(value["probes"][0])
+            probe.update({
+                "name": f"probe-{number}",
+                "artifact_path": f"reviewer://probe-{number}",
+                "command": f"python /tmp/probe-{number}.py",
+                "false_success_mutation": f"mutation-{number}",
+                "execution_receipt": f"receipt-governance-{number}",
+            })
+            value["probes"].append(probe)
+        self.assertEqual(
+            validate(
+                value, prior_overturns=0, high_risk=True, expected_head=HEAD,
+                devils_advocate=True,
+            ),
+            (4, 8),
+        )
+
+    def test_governance_scope_requires_inapplicability_rationale(self):
+        value = packet()
+        value["evidence_scope"] = "governance_control_plane"
+        with self.assertRaisesRegex(EvidenceError, "inapplicability_rationale"):
+            validate(value, prior_overturns=0, high_risk=True, expected_head=HEAD)
+
     def test_rereview_requires_remediation_threat_model(self):
         prior = packet(PRIOR)
         value = packet()
