@@ -135,8 +135,10 @@ reviewed head, publish nothing and restart.
 
 ## 6. Publish and prove the result
 
+The reviewer MUST explicitly publish the formal review verdict, line-level findings, and summary comments directly to the GitHub Pull Request. Outputting findings solely in chat or local files is strictly forbidden.
+
 Prepare the formal body, summary, and optional inline-comment JSON outside the
-reviewed repository. Publish them together through the guarded publisher:
+reviewed repository. Publish them together through the guarded publisher (or `gh pr review` / `gh pr comment`):
 
 ```bash
 python skills/engineering/code-review/scripts/publish_review.py \
@@ -147,8 +149,7 @@ python skills/engineering/code-review/scripts/publish_review.py \
   [--inline-comments-file <external-inline-comments.json>]
 ```
 
-The publisher creates the formal review and then always creates or updates one
-PR issue comment containing:
+The publisher creates the formal review, attaches inline comments to changed hunks, and always creates or updates one PR issue comment containing:
 
 ```text
 <!-- reviewer-summary:basic:<full-head-sha> -->
@@ -163,7 +164,7 @@ Residual risk: <specific remaining uncertainty>
 
 Do not substitute a chat response, task-state update, committed review report,
 or local Markdown file for this PR comment. On an unchanged head, update or
-reuse the existing marked summary instead of creating comment spam.
+reuse the existing marked summary instead of creating comment spam. Every review must be submitted directly to the PR comments and reviews on GitHub before completing the task.
 
 Re-query reviews and comments and prove the formal verdict, inline comments,
 and marked summary exist on the expected head.
