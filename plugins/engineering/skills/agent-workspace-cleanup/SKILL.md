@@ -10,16 +10,16 @@ This skill safely identifies and removes stale Git worktrees, prunable metadata,
 
 ## Usage
 
-When the user asks to clean up the workspace, execute the cleanup script from its plugin directory:
+When the user asks to clean up the workspace, execute the cleanup script from the `agy-skills` repository root:
 
 ```bash
-python3 ../agy-skills/plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspace_cleanup.py
+python3 plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspace_cleanup.py
 ```
 
 ### Dry Run
 To preview what will be removed without actually deleting anything, run with the `--dry-run` flag:
 ```bash
-python3 ../agy-skills/plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspace_cleanup.py --dry-run
+python3 plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspace_cleanup.py --dry-run
 ```
 
 ## Validation & Output
