@@ -17,7 +17,7 @@ class ReviewerSkillContractTest(unittest.TestCase):
         basic = read("code-review/SKILL.md")
         hard = read("hard-review/SKILL.md")
         devil = read("devils-advocate-review/SKILL.md")
-        firewall = read("../../rules/AGENTS.md")
+        firewall = read("../rules/AGENTS.md")
 
         self.assertIn("publish_review.py", basic)
         self.assertIn("reviewer-summary:basic", basic)
@@ -50,7 +50,7 @@ class ReviewerSkillContractTest(unittest.TestCase):
         self.assertIn("provisional verdict `CHANGES_REQUESTED`", devil)
 
     def test_merge_roles_are_explicit(self):
-        firewall = read("../../rules/AGENTS.md")
+        firewall = read("../rules/AGENTS.md")
         self.assertIn("`tticom-gov`", firewall)
         self.assertIn("`tticom-automation`", firewall)
         self.assertIn("unconditional no-merge", firewall)
