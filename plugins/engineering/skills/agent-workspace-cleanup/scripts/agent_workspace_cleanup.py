@@ -79,7 +79,8 @@ def resolve_workspace():
 
 def is_stale_review(repo, branch):
     if not branch:
-        return True # Detached head, likely stale if not locked
+        # A detached head is not proof of staleness. Preserve it.
+        return False
     # Use git to check if branch is merged to main, or if upstream is gone
     res = run_cmd(["git", "branch", "--merged", "main"], cwd=repo, check=False)
     if res.returncode == 0:

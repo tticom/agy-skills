@@ -118,3 +118,8 @@ def test_is_stale_review_merged(mock_run_cmd):
     mock_run_cmd.side_effect = side_effect
     
     assert cleanup.is_stale_review(Path("/repo"), "my-merged-review") is True
+
+def test_is_stale_review_detached():
+    # A detached head (no branch) must be preserved
+    assert cleanup.is_stale_review(Path("/repo"), "") is False
+    assert cleanup.is_stale_review(Path("/repo"), None) is False
