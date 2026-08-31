@@ -141,5 +141,5 @@ Review level: DEVILS_ADVOCATE
 Include the contradiction ledger, reviewer-created probes, strongest disproved
 or surviving false-success mode, evidence-gate result, and residual risk.
 
-Do not implement fixes or reviewer-process improvements. Publish them only as
+The reviewer MUST publish all review findings, decisions, and comments directly to the GitHub PR thread. Outputting review findings exclusively into the chat without posting them to the PR is strictly prohibited. Do not implement fixes or reviewer-process improvements. Publish them only as
 comments for a separately authorized development cycle.

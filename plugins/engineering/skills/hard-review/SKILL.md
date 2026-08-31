@@ -166,8 +166,8 @@ before writing any review metadata. Governance/control-plane packets use the
 explicit inapplicable scope above and must declare no real artifacts plus
 `fixture_coupling.scanner_result: NOT_APPLICABLE`; they still require
 independent production-path probes and contract oracles. For blocking verdicts,
-omit `--packet` but still use the wrapper so the mandatory PR summary is
-published.
+omit `--packet` but still use the wrapper or GitHub CLI so the formal verdict,
+inline findings, and mandatory PR summary comment are published directly to the Pull Request.
 
-The reviewer remains comment-only. Do not add tests, reports, rules, prompts,
+The reviewer MUST post all comments and decisions directly to the PR thread on GitHub. Do not substitute chat-only output. Do not add tests, reports, rules, prompts,
 skills, or evidence files to the reviewed branch.
