@@ -10,18 +10,18 @@ This skill safely identifies and removes stale Git worktrees, prunable metadata,
 
 ## Usage
 
-When the user asks to clean up the workspace, execute the cleanup script located in the `score2gp-agentops` repository:
+When the user asks to clean up the workspace, execute the cleanup script from its plugin directory:
 
 ```bash
-python3 ./scripts/agent_workspace_cleanup.py
+python3 ../agy-skills/plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspace_cleanup.py
 ```
 
 ### Dry Run
 To preview what will be removed without actually deleting anything, run with the `--dry-run` flag:
 ```bash
-python3 ./scripts/agent_workspace_cleanup.py --dry-run
+python3 ../agy-skills/plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspace_cleanup.py --dry-run
 ```
 
 ## Validation & Output
 
-After running the script, it will generate a JSON receipt in the `projects/score2gp/runs/` directory detailing every preserved and removed path. You should summarize these results for the user and provide a link to the generated receipt file.
+After running the script, it will generate a JSON receipt in the `<workspace>/agy-logs/cleanup-receipts/` directory (or the path defined by `CLEANUP_RECEIPT_DIR`) detailing every preserved and removed path. You should summarize these results for the user and provide a link to the generated receipt file.
