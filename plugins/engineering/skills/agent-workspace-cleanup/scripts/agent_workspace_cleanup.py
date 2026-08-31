@@ -12,7 +12,16 @@ import getpass
 from pathlib import Path
 import datetime
 
-ALLOWED_IDENTITIES = {"tticom", "tticom-gov", "tticom-automation", "tticom-codex", "niall"}
+def get_allowed_identities():
+    env_ids = os.environ.get("CLEANUP_ALLOWED_IDENTITIES")
+    if env_ids:
+        return set(env_ids.split(","))
+    return {"tticom", "tticom-gov", "tticom-automation", "tticom-codex", "niall"}
+
+def get_receipt_dir(workspace):
+    if "CLEANUP_RECEIPT_DIR" in os.environ:
+        return Path(os.environ["CLEANUP_RECEIPT_DIR"]).resolve()
+    return workspace / "agy-logs" / "cleanup-receipts"
 
 def run_cmd(cmd, cwd=None, check=True):
     res = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
@@ -34,7 +43,7 @@ def get_worktrees(repo_path):
                 worktrees.append(current_wt)
             current_wt = {"path": line.split(" ", 1)[1]}
         elif line.startswith("branch "):
-            current_wt["branch"] = line.split(" ", 1)[1]
+            current_wt["branch"] = line.split(" ", 1)[1].replace("refs/heads/", "")
         elif line.startswith("locked"):
             current_wt["locked"] = line.split(" ", 1)[1] if " " in line else "locked"
         elif line.startswith("prunable"):
@@ -57,16 +66,48 @@ def resolve_workspace():
         return Path(os.environ["SCORE2GP_WORKSPACE"]).resolve()
     if "WORKSPACE_ROOT" in os.environ:
         return Path(os.environ["WORKSPACE_ROOT"]).resolve()
+    if "AGY_WORKSPACE_DIR" in os.environ:
+        return Path(os.environ["AGY_WORKSPACE_DIR"]).resolve()
     
-    script_dir = Path(__file__).resolve().parent
-    workspace = script_dir.parent.parent.parent.parent.parent.parent
-    return workspace
+    # Robust resolution: climb until we find a git repo, then return its parent
+    curr = Path(__file__).resolve().parent
+    while curr != curr.parent:
+        if (curr / ".git").exists():
+            return curr.parent
+        curr = curr.parent
+    return Path.cwd().parent
+
+def is_stale_review(repo, branch):
+    if not branch:
+        return True # Detached head, likely stale if not locked
+    # Use git to check if branch is merged to main, or if upstream is gone
+    res = run_cmd(["git", "branch", "--merged", "main"], cwd=repo, check=False)
+    if res.returncode == 0:
+        merged_branches = [b.strip().replace("* ", "") for b in res.stdout.splitlines()]
+        if branch in merged_branches:
+            return True
+            
+    # Check if PR is closed/merged via gh CLI if available
+    pr_state = run_cmd(["gh", "pr", "view", branch, "--json", "state"], cwd=repo, check=False)
+    if pr_state.returncode == 0:
+        try:
+            info = json.loads(pr_state.stdout)
+            if info.get("state") in {"MERGED", "CLOSED"}:
+                return True
+            if info.get("state") == "OPEN":
+                return False
+        except Exception:
+            pass
+            
+    # Without strong evidence of staleness, preserve it
+    return False
 
 def main():
     dry_run = "--dry-run" in sys.argv
     
     user = getpass.getuser()
-    if user not in ALLOWED_IDENTITIES:
+    allowed = get_allowed_identities()
+    if user not in allowed:
         print(f"Workspace path invalid or unsafe. Identity {user} not allowed.")
         sys.exit(1)
 
@@ -123,6 +164,11 @@ def main():
                 receipt.append({"action": "preserved", "path": str(wt_path), "reason": "dirty worktree"})
                 continue
                 
+            if not is_stale_review(repo, wt.get("branch")):
+                print(f"Preserving active or unverified review worktree: {wt_path}")
+                receipt.append({"action": "preserved", "path": str(wt_path), "reason": "active/unverified review"})
+                continue
+                
             print(f"{'Would remove' if dry_run else 'Removing'} disposable worktree: {wt_path}")
             if not dry_run:
                 try:
@@ -135,7 +181,7 @@ def main():
                 receipt.append({"action": "dry_run_remove", "path": str(wt_path), "reason": "clean stale review worktree"})
                 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
-    receipt_file = workspace / "score2gp-agentops" / "projects" / "score2gp" / "runs" / f"{timestamp}-cleanup-receipt.json"
+    receipt_file = get_receipt_dir(workspace) / f"{timestamp}-cleanup-receipt.json"
     receipt_file.parent.mkdir(parents=True, exist_ok=True)
     with open(receipt_file, "w") as f:
         json.dump(receipt, f, indent=2)

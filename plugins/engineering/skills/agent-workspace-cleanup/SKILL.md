@@ -13,13 +13,13 @@ This skill safely identifies and removes stale Git worktrees, prunable metadata,
 When the user asks to clean up the workspace, execute the cleanup script located in the `score2gp-agentops` repository:
 
 ```bash
-python3 ./scripts/score2gp_agent_workspace_cleanup.py
+python3 ./scripts/agent_workspace_cleanup.py
 ```
 
 ### Dry Run
 To preview what will be removed without actually deleting anything, run with the `--dry-run` flag:
 ```bash
-python3 ./scripts/score2gp_agent_workspace_cleanup.py --dry-run
+python3 ./scripts/agent_workspace_cleanup.py --dry-run
 ```
 
 ## Validation & Output
