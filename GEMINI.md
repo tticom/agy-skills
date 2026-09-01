@@ -1,5 +1,14 @@
 Skills are organized into bucket plugins under `plugins/`:
 
+## Workspace startup synchronisation
+
+For a workspace containing multiple repository checkouts, run
+`scripts/workspace-startup.sh` at agent startup with `WORKSPACE_ROOT` set to
+the workspace root. It fetches all immediate repositories and fast-forwards
+only clean checkouts already on `main`. It never switches branches or
+overwrites dirty work. Read the generated `agy-logs/workspace-state/latest.tsv`
+before selecting a repository.
+
 - `engineering/`: daily code work
 - `productivity/`: daily non-code workflow tools
 - `misc/`: kept around but rarely used, not promoted
