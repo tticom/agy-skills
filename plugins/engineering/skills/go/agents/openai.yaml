@@ -1,0 +1,6 @@
+interface:
+  display_name: "Score2GP Go"
+  short_description: "Run the Score2GP author dispatcher"
+  default_prompt: "Use $go to start the authorized Score2GP automation dispatch."
+policy:
+  allow_implicit_invocation: false
