@@ -1,12 +1,13 @@
 # `/go`
 
-`go` is the explicit Score2GP author-side dispatch command. It is available
-when the `go` skill is installed in the agent's skill directory.
+`go` is the explicit Score2GP author-side Antigravity dispatch command. It is
+available when the `go` skill is installed in the Antigravity engineering
+plugin. It is not a Codex reviewer command.
 
 Run it only as the `tticom-automation` identity. The skill executes:
 
 ```bash
-python3 scripts/score2gp_go_bootstrap.py --product ../score2gp --agentops .
+python3 scripts/score2gp_dispatch.py --product ../score2gp --agentops . --json
 ```
 
 The identity-aware router selects the author bootstrap, which performs

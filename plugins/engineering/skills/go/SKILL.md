@@ -7,7 +7,8 @@ metadata:
 
 # Score2GP author dispatch
 
-This skill is the `/go` command for the Score2GP automation worker.
+This skill is the `/go` command for the Score2GP Antigravity automation
+worker. It is not a Codex reviewer command.
 
 Run only in the dedicated `tticom-automation` Linux workspace. Verify the
 identity and workspace against the Score2GP AgentOps profile before any
