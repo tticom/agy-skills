@@ -24,4 +24,12 @@ python3 plugins/engineering/skills/agent-workspace-cleanup/scripts/agent_workspa
 
 ## Validation & Output
 
-After running the script, it will generate a JSON receipt in the `<workspace>/agy-logs/cleanup-receipts/` directory (or the path defined by `CLEANUP_RECEIPT_DIR`) detailing every preserved and removed path. You should summarize these results for the user and provide a link to the generated receipt file.
+After running the script, it will generate:
+
+- a JSON receipt in `<workspace>/agy-logs/cleanup-receipts/` (or the path
+  defined by `CLEANUP_RECEIPT_DIR`) detailing every preserved and removed path;
+- a human-readable checkout map at
+  `<workspace>/agy-logs/workspace-state/latest.md`, including branch, HEAD,
+  cleanliness, and the active-task pointer.
+
+Summarize the receipt and provide links to both artifacts.
