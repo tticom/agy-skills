@@ -55,19 +55,22 @@ def get_worktrees(repo_path):
     return worktrees
 
 def discover_repos(workspace):
-    repos = []
+    return [d for d in workspace.iterdir() if d.is_dir() and (d / ".git").exists()]
+
+
+def unique_scan_repos(repos):
+    unique_repos = []
     seen_common_dirs = set()
-    for d in workspace.iterdir():
-        if d.is_dir() and (d / ".git").exists():
-            common_dir = run_cmd(
-                ["git", "rev-parse", "--git-common-dir"], cwd=d, check=False
-            ).stdout.strip()
-            common_path = str((d / common_dir).resolve()) if common_dir else str(d)
-            if common_path in seen_common_dirs:
-                continue
-            seen_common_dirs.add(common_path)
-            repos.append(d)
-    return repos
+    for repo in repos:
+        common_dir = run_cmd(
+            ["git", "rev-parse", "--git-common-dir"], cwd=repo, check=False
+        ).stdout.strip()
+        common_path = str((repo / common_dir).resolve()) if common_dir else str(repo)
+        if common_path in seen_common_dirs:
+            continue
+        seen_common_dirs.add(common_path)
+        unique_repos.append(repo)
+    return unique_repos
 
 
 def write_workspace_index(workspace, repos, active_task_path):
@@ -148,9 +151,10 @@ def main():
         sys.exit(1)
         
     repos = discover_repos(workspace)
+    scan_repos = unique_scan_repos(repos)
     receipt = []
     
-    for repo in repos:
+    for repo in scan_repos:
         print(f"Scanning {repo.name}...")
         
         prune_cmd = ["git", "worktree", "prune"]
