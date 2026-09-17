@@ -2,6 +2,7 @@
 name: handoff-bg
 description: Hand the current conversation off to a fresh background subagent that picks up the work immediately across Antigravity (AGY), Codex, and Gemini Antigravity.
 argument-hint: "What will the next session be used for?"
+disable-model-invocation: true
 ---
 
 Write a handoff summary of the current conversation so a fresh agent can continue the work immediately in the background:

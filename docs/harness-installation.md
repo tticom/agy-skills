@@ -10,7 +10,7 @@ From the repository root, run:
 ```bash
 python3 scripts/sync-harness-manifests.py
 python3 scripts/sync-harness-manifests.py --check
-PYTHONPATH=scripts python3 -m unittest scripts/test_sync_harness_manifests.py
+python3 scripts/test_sync_harness_manifests.py
 ```
 
 The generator validates every `SKILL.md`, then creates:
@@ -18,7 +18,7 @@ The generator validates every `SKILL.md`, then creates:
 - `skills/<name>/` as a flattened, generated copy of every source skill;
 - `rules/` as the generated Codex dependency projection for shared harness rules;
 - `.codex-plugin/plugin.json`, pointing Codex at the single generated root;
-- `.agents/plugins/marketplace.json`, listing the promoted AGY bucket plugins.
+- `.agents/plugins/marketplace.json`, listing the Codex root plugin and promoted AGY bucket plugins.
 
 Add, rename, move, or remove skills only under `plugins/<bucket>/skills/`, then
 rerun the generator. Keep the generated files in the same commit as the skill

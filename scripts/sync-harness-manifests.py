@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import filecmp
 import json
-import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -90,29 +89,16 @@ def codex_manifest() -> dict:
     }
 
 
-def agy_manifest() -> dict:
-    paths = []
-    for bucket in PROMOTED_BUCKETS:
-        for path in skill_dirs(bucket):
-            skill_metadata(path)
-            paths.append(f"./plugins/{bucket}/skills/{path.name}")
-    return {
-        "name": "agy-skills",
-        "version": "1.0.0",
-        "description": "TTI's engineering and productivity skills for Gemini Antigravity.",
-        "author": {"name": "TTI", "url": "https://github.com/tticom"},
-        "repository": "https://github.com/tticom/agy-skills",
-        "license": "MIT",
-        "skills": paths,
-    }
-
-
-def agy_marketplace() -> dict:
+def codex_marketplace() -> dict:
     return {
         "name": "agy-skills",
         "interface": {"displayName": "AGY Skills"},
-        "plugins": [
-            {
+        "plugins": [{
+                "name": "agy-skills",
+                "source": {"source": "local", "path": "./"},
+                "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                "category": "Developer Tools",
+            }] + [{
                 "name": f"agy-{bucket}-kit",
                 "source": {"source": "local", "path": f"./plugins/{bucket}"},
                 "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
@@ -123,28 +109,11 @@ def agy_marketplace() -> dict:
     }
 
 
-def codex_marketplace() -> dict:
-    return {
-        "name": "agy-skills",
-        "interface": {"displayName": "AGY Skills"},
-        "plugins": [{
-            "name": "agy-skills",
-            "source": {"source": "local", "path": "./"},
-            "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
-            "category": "Developer Tools",
-        }],
-    }
-
-
 def build_codex_projection(target: Path) -> None:
     target.mkdir(parents=True, exist_ok=True)
     for name, source in all_skills():
         destination = target / name
         shutil.copytree(source, destination)
-        skill_md = destination / "SKILL.md"
-        contents = skill_md.read_text(encoding="utf-8")
-        contents = re.sub(r"^disable-model-invocation:\s*true\s*\n", "", contents, flags=re.MULTILINE)
-        skill_md.write_text(contents, encoding="utf-8")
     rules = ROOT / "plugins" / "engineering" / "rules"
     if rules.is_dir():
         shutil.copytree(rules, target.parent / "rules")
@@ -169,7 +138,7 @@ def main() -> int:
     args = parser.parse_args()
     expected = {
         ROOT / ".codex-plugin" / "plugin.json": codex_manifest(),
-        ROOT / ".agents" / "plugins" / "marketplace.json": agy_marketplace(),
+        ROOT / ".agents" / "plugins" / "marketplace.json": codex_marketplace(),
     }
     if args.check:
         with tempfile.TemporaryDirectory() as directory:

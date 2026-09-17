@@ -3,6 +3,7 @@
 import tempfile
 import unittest
 import importlib.util
+import json
 from pathlib import Path
 
 MODULE_PATH = Path(__file__).with_name("sync-harness-manifests.py")
@@ -25,22 +26,24 @@ class HarnessManifestTest(unittest.TestCase):
         self.assertEqual(name, "example")
         self.assertEqual(description, "first line second line")
 
-    def test_codex_projection_contains_rules_dependency_and_strips_only_agy_flag(self):
+    def test_codex_projection_contains_rules_dependency_and_preserves_frontmatter(self):
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / "skills"
             sync.build_codex_projection(target)
             self.assertTrue((target / "code-review" / "SKILL.md").is_file())
             self.assertTrue((target.parent / "rules" / "AGENTS.md").is_file())
-            self.assertNotIn(
+            self.assertIn(
                 "disable-model-invocation: true",
                 (target / "ask-matt" / "SKILL.md").read_text(encoding="utf-8"),
             )
 
-    def test_manifests_use_codex_root_and_agy_bucket_paths(self):
-        codex = sync.codex_manifest()
-        agy = sync.agy_manifest()
-        self.assertEqual(codex["skills"], "./skills/")
-        self.assertTrue(all(path.startswith("./plugins/") for path in agy["skills"]))
+    def test_emitted_manifests_match_active_generators(self):
+        codex_path = sync.ROOT / ".codex-plugin" / "plugin.json"
+        marketplace_path = sync.ROOT / ".agents" / "plugins" / "marketplace.json"
+        self.assertEqual(json.loads(codex_path.read_text(encoding="utf-8")), sync.codex_manifest())
+        self.assertEqual(json.loads(marketplace_path.read_text(encoding="utf-8")), sync.codex_marketplace())
+        self.assertEqual(sync.codex_manifest()["skills"], "./skills/")
+        self.assertIn("agy-skills", {plugin["name"] for plugin in sync.codex_marketplace()["plugins"]})
 
 
 if __name__ == "__main__":

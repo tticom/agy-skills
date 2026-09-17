@@ -1,6 +1,7 @@
 ---
 name: implement-spec
 description: "Implement a specification in code."
+disable-model-invocation: true
 ---
 
 You have been provided a spec. This spec should have tickets associated with it, describing how to implement the spec.
