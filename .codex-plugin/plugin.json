@@ -1,0 +1,33 @@
+{
+  "name": "agy-skills",
+  "version": "1.0.0",
+  "description": "TTI's complete skill set for Codex.",
+  "author": {
+    "name": "TTI",
+    "url": "https://github.com/tticom"
+  },
+  "repository": "https://github.com/tticom/agy-skills",
+  "license": "MIT",
+  "keywords": [
+    "engineering",
+    "agent-skills",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AGY Skills for Codex",
+    "shortDescription": "Practical skills for Codex and AGY",
+    "longDescription": "The complete AGY skill set, packaged for Codex.",
+    "developerName": "TTI",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Code",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Help me choose the right engineering workflow",
+      "Debug this issue with a tight feedback loop",
+      "Review this change for correctness and regressions"
+    ]
+  }
+}

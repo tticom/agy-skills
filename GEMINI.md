@@ -1,5 +1,10 @@
 Skills are organized into bucket plugins under `plugins/`:
 
+Run `python3 scripts/sync-harness-manifests.py` after adding, moving, renaming,
+or removing a skill. It regenerates the Codex-compatible `skills/` projection
+and the AGY/Codex manifests. Run it with `--check` in CI; generated files must
+be committed with the source skill change.
+
 ## Workspace startup synchronisation
 
 For a workspace containing multiple repository checkouts, run

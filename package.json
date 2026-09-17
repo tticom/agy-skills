@@ -9,6 +9,8 @@
   },
   "license": "MIT",
   "scripts": {
+    "sync-harness-manifests": "python3 scripts/sync-harness-manifests.py",
+    "check-harness-manifests": "python3 scripts/sync-harness-manifests.py --check",
     "changeset": "changeset",
     "version": "changeset version && node scripts/sync-plugin-version.mjs",
     "check-plugin-version": "node scripts/sync-plugin-version.mjs --check"
