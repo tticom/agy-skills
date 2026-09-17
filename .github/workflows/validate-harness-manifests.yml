@@ -1,0 +1,25 @@
+name: Validate harness manifests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Python validation dependency
+        run: python3 -m pip install --disable-pip-version-check pyyaml pytest
+      - name: Validate generated Codex and AGY manifests
+        run: |
+          python3 scripts/sync-harness-manifests.py --check
+          python3 scripts/test_sync_harness_manifests.py
+          python3 -m pytest --collect-only
+          python3 skills/code-review/scripts/test_reviewer_skill_contracts.py
+          git diff --check "${{ github.event.pull_request.base.sha || github.event.before }}" "${{ github.sha }}"
+          python3 -m py_compile scripts/sync-harness-manifests.py

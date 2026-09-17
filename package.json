@@ -1,14 +1,17 @@
 {
-  "name": "mattpocock-skills",
-  "version": "1.2.3",
+  "name": "agy-skills",
+  "version": "1.0.0",
   "private": true,
-  "description": "Matt Pocock's agent skills for real engineering",
+  "description": "TTI's agent skills for Codex and AGY",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mattpocock/skills"
+    "url": "https://github.com/tticom/agy-skills"
   },
   "license": "MIT",
   "scripts": {
+    "sync-harness-manifests": "python3 scripts/sync-harness-manifests.py",
+    "check-harness-manifests": "python3 scripts/sync-harness-manifests.py --check",
+    "test-harness-manifests": "python3 scripts/test_sync_harness_manifests.py",
     "changeset": "changeset",
     "version": "changeset version && node scripts/sync-plugin-version.mjs",
     "check-plugin-version": "node scripts/sync-plugin-version.mjs --check"
