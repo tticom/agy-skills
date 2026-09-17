@@ -11,6 +11,8 @@ import shutil
 import tempfile
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
 ALL_BUCKETS = ("engineering", "productivity", "misc", "in-progress")
 PROMOTED_BUCKETS = ("engineering", "productivity")
@@ -32,11 +34,17 @@ def skill_metadata(path: Path) -> tuple[str, str]:
     contents = (path / "SKILL.md").read_text(encoding="utf-8")
     if not contents.startswith("---\n"):
         raise ValueError(f"{path}/SKILL.md has no YAML frontmatter")
-    name = re.search(r"^name:\s*([^\n]+)$", contents, re.MULTILINE)
-    description = re.search(r"^description:\s*([^\n]+)$", contents, re.MULTILINE)
-    if not name or not description:
+    end = contents.find("\n---", 4)
+    if end < 0:
         raise ValueError(f"{path}/SKILL.md needs name and description frontmatter")
-    return name.group(1).strip().strip('"\''), description.group(1).strip().strip('"\'')
+    frontmatter = yaml.safe_load(contents[4:end])
+    if not isinstance(frontmatter, dict):
+        raise ValueError(f"{path}/SKILL.md frontmatter must be an object")
+    name = frontmatter.get("name")
+    description = frontmatter.get("description")
+    if not isinstance(name, str) or not name.strip() or not isinstance(description, str) or not description.strip():
+        raise ValueError(f"{path}/SKILL.md needs non-empty name and description frontmatter")
+    return name.strip(), description.strip()
 
 
 def all_skills() -> list[tuple[str, Path]]:
@@ -99,6 +107,22 @@ def agy_manifest() -> dict:
     }
 
 
+def agy_marketplace() -> dict:
+    return {
+        "name": "agy-skills",
+        "interface": {"displayName": "AGY Skills"},
+        "plugins": [
+            {
+                "name": f"agy-{bucket}-kit",
+                "source": {"source": "local", "path": f"./plugins/{bucket}"},
+                "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                "category": "Developer Tools",
+            }
+            for bucket in PROMOTED_BUCKETS
+        ],
+    }
+
+
 def codex_marketplace() -> dict:
     return {
         "name": "agy-skills",
@@ -121,6 +145,9 @@ def build_codex_projection(target: Path) -> None:
         contents = skill_md.read_text(encoding="utf-8")
         contents = re.sub(r"^disable-model-invocation:\s*true\s*\n", "", contents, flags=re.MULTILINE)
         skill_md.write_text(contents, encoding="utf-8")
+    rules = ROOT / "plugins" / "engineering" / "rules"
+    if rules.is_dir():
+        shutil.copytree(rules, target.parent / "rules")
 
 
 def same_tree(left: Path, right: Path) -> bool:
@@ -142,14 +169,13 @@ def main() -> int:
     args = parser.parse_args()
     expected = {
         ROOT / ".codex-plugin" / "plugin.json": codex_manifest(),
-        ROOT / ".agents" / "plugins" / "plugin.json": agy_manifest(),
-        ROOT / ".agents" / "plugins" / "marketplace.json": codex_marketplace(),
+        ROOT / ".agents" / "plugins" / "marketplace.json": agy_marketplace(),
     }
     if args.check:
         with tempfile.TemporaryDirectory() as directory:
             generated = Path(directory) / "skills"
             build_codex_projection(generated)
-            if not same_tree(generated, ROOT / "skills"):
+            if not same_tree(generated, ROOT / "skills") or not same_tree(generated.parent / "rules", ROOT / "rules"):
                 print("out of date: skills/")
                 return 1
         for path, value in expected.items():
@@ -160,6 +186,8 @@ def main() -> int:
     projection = ROOT / "skills"
     if projection.exists():
         shutil.rmtree(projection)
+    if (ROOT / "rules").exists():
+        shutil.rmtree(ROOT / "rules")
     build_codex_projection(projection)
     for path, value in expected.items():
         write_json(path, value)

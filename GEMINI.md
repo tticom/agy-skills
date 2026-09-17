@@ -20,9 +20,9 @@ before selecting a repository.
 - `in-progress/`: beta: public on purpose, feedback wanted, not shipped in the plugin
 - `deprecated/`: no longer used
 
-Every skill in `plugins/engineering/` or `plugins/productivity/` (the **promoted** buckets) must have a reference in the top-level `README.md` and an entry in `.agents/plugins/plugin.json`'s `skills` array (the Gemini Antigravity plugin ships exactly the promoted set). Skills in `plugins/misc/`, `plugins/in-progress/`, and `plugins/deprecated/` must not appear in either.
+Every skill in `plugins/engineering/` or `plugins/productivity/` (the **promoted** buckets) must be loadable through its bucket plugin and have a reference in the top-level `README.md`. Skills in `plugins/misc/`, `plugins/in-progress/`, and `plugins/deprecated/` are not promoted to AGY.
 
-Install commands are copied verbatim from [.agents/install-block.md](./.agents/install-block.md). `.agents/plugins/marketplace.json` makes the repo its own single-plugin marketplace (a fallback the install block explains, not the documented route). Run `gemini plugin validate . --strict` after touching either manifest. Why a Gemini plugin but not (yet) a Codex one lives in [.agents/adr/0002-ship-as-a-gemini-antigravity-plugin.md](./.agents/adr/0002-ship-as-a-gemini-antigravity-plugin.md).
+Install commands are copied verbatim from [.agents/install-block.md](./.agents/install-block.md). Run `agy plugin validate plugins/engineering` and `agy plugin validate plugins/productivity` after touching promoted plugin metadata. The Codex projection is generated with `scripts/sync-harness-manifests.py`.
 
 Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.
 

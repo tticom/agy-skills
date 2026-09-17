@@ -10,15 +10,15 @@ From the repository root, run:
 ```bash
 python3 scripts/sync-harness-manifests.py
 python3 scripts/sync-harness-manifests.py --check
+PYTHONPATH=scripts python3 -m unittest scripts/test_sync_harness_manifests.py
 ```
 
 The generator validates every `SKILL.md`, then creates:
 
 - `skills/<name>/` as a flattened, generated copy of every source skill;
+- `rules/` as the generated Codex dependency projection for shared harness rules;
 - `.codex-plugin/plugin.json`, pointing Codex at the single generated root;
-- `.agents/plugins/plugin.json` for AGY, listing the promoted engineering and
-  productivity skills;
-- `.agents/plugins/marketplace.json` for installing the Codex plugin.
+- `.agents/plugins/marketplace.json`, listing the promoted AGY bucket plugins.
 
 Add, rename, move, or remove skills only under `plugins/<bucket>/skills/`, then
 rerun the generator. Keep the generated files in the same commit as the skill
@@ -44,7 +44,13 @@ plugin and can be invoked by their skill name.
 
 ## Install in AGY
 
-AGY consumes `.agents/plugins/plugin.json`. Validate the generated promoted
-manifest with the AGY plugin validator, then install or reload the repository
-plugin using the AGY plugin workflow. The `misc` and `in-progress` buckets are
-kept in the Codex projection but remain outside AGY's promoted manifest.
+AGY consumes each bucket plugin directly. Validate the promoted plugins with:
+
+```bash
+agy plugin validate plugins/engineering
+agy plugin validate plugins/productivity
+```
+
+Install or reload those bucket plugins using the AGY plugin workflow. The
+`misc` and `in-progress` buckets remain available in the Codex projection but
+are not promoted to AGY.

@@ -100,7 +100,7 @@ def resolve_workspace():
         return Path(os.environ["WORKSPACE_ROOT"]).resolve()
     if "AGY_WORKSPACE_DIR" in os.environ:
         return Path(os.environ["AGY_WORKSPACE_DIR"]).resolve()
-    
+
     # Robust resolution: climb until we find a git repo, then return its parent
     curr = Path(__file__).resolve().parent
     while curr != curr.parent:
@@ -119,7 +119,7 @@ def is_stale_review(repo, branch):
         merged_branches = [b.strip().replace("* ", "") for b in res.stdout.splitlines()]
         if branch in merged_branches:
             return True
-            
+
     # Check if PR is closed/merged via gh CLI if available
     pr_state = run_cmd(["gh", "pr", "view", branch, "--json", "state"], cwd=repo, check=False)
     if pr_state.returncode == 0:
@@ -131,13 +131,13 @@ def is_stale_review(repo, branch):
                 return False
         except Exception:
             pass
-            
+
     # Without strong evidence of staleness, preserve it
     return False
 
 def main():
     dry_run = "--dry-run" in sys.argv
-    
+
     user = getpass.getuser()
     allowed = get_allowed_identities()
     if user not in allowed:
@@ -145,40 +145,40 @@ def main():
         sys.exit(1)
 
     workspace = resolve_workspace()
-    
+
     if not workspace.exists() or "/tmp" in str(workspace) or "/mnt/c" in str(workspace):
         print(f"Workspace path invalid or unsafe: {workspace}")
         sys.exit(1)
-        
+
     repos = discover_repos(workspace)
     scan_repos = unique_scan_repos(repos)
     receipt = []
-    
+
     for repo in scan_repos:
         print(f"Scanning {repo.name}...")
-        
+
         prune_cmd = ["git", "worktree", "prune"]
         if dry_run:
             prune_cmd.append("--dry-run")
-            
+
         prune_res = run_cmd(prune_cmd, cwd=repo, check=False)
         prune_output = "\n".join(part for part in (prune_res.stdout, prune_res.stderr) if part.strip())
         if prune_res.returncode == 0 and prune_output.strip():
             receipt.append({"action": "pruned_metadata" if not dry_run else "dry_run_prune", "path": str(repo), "reason": prune_output.strip()})
-        
+
         worktrees = get_worktrees(repo)
-        
+
         for wt in worktrees:
             wt_path = Path(wt["path"])
             if wt_path == repo:
                 continue
-                
+
             is_review = "-review-pr-" in wt_path.name or wt_path.name.endswith("-review")
             if not is_review:
                 print(f"Skipping unclassified worktree: {wt_path}")
                 receipt.append({"action": "preserved", "path": str(wt_path), "reason": "unknown/unclassified worktree"})
                 continue
-                
+
             if "locked" in wt:
                 print(f"Preserving locked worktree: {wt_path} ({wt['locked']})")
                 receipt.append({"action": "preserved", "path": str(wt_path), "reason": f"locked worktree: {wt['locked']}"})
@@ -193,17 +193,17 @@ def main():
                 print(f"Error checking {wt_path}: {e}")
                 receipt.append({"action": "error", "path": str(wt_path), "reason": str(e)})
                 continue
-                
+
             if dirty:
                 print(f"Preserving dirty worktree: {wt_path}")
                 receipt.append({"action": "preserved", "path": str(wt_path), "reason": "dirty worktree"})
                 continue
-                
+
             if not is_stale_review(repo, wt.get("branch")):
                 print(f"Preserving active or unverified review worktree: {wt_path}")
                 receipt.append({"action": "preserved", "path": str(wt_path), "reason": "active/unverified review"})
                 continue
-                
+
             print(f"{'Would remove' if dry_run else 'Removing'} disposable worktree: {wt_path}")
             if not dry_run:
                 try:
@@ -214,7 +214,7 @@ def main():
                     receipt.append({"action": "error", "path": str(wt_path), "reason": str(e)})
             else:
                 receipt.append({"action": "dry_run_remove", "path": str(wt_path), "reason": "clean stale review worktree"})
-                
+
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
     active_task_path = workspace / "score2gp-agentops" / "projects" / "score2gp" / "ACTIVE_TASK.md"
     index_file = write_workspace_index(workspace, repos, active_task_path)

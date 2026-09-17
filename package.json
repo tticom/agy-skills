@@ -11,6 +11,7 @@
   "scripts": {
     "sync-harness-manifests": "python3 scripts/sync-harness-manifests.py",
     "check-harness-manifests": "python3 scripts/sync-harness-manifests.py --check",
+    "test-harness-manifests": "python3 scripts/test_sync_harness_manifests.py",
     "changeset": "changeset",
     "version": "changeset version && node scripts/sync-plugin-version.mjs",
     "check-plugin-version": "node scripts/sync-plugin-version.mjs --check"
