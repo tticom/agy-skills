@@ -84,11 +84,39 @@ class TestFetchReviewFindings(unittest.TestCase):
         self.assertEqual(ledger["review_state"], "CHANGES_REQUESTED")
         self.assertEqual(ledger["reviewer"], "reviewer-user")
 
-        # Two items: 1 review body + 1 inline comment
+        # Two items: 1 review body + 1 inline thread
         self.assertEqual(len(ledger["findings"]), 2)
         self.assertEqual(ledger["findings"][0]["source"], "review_body")
-        self.assertEqual(ledger["findings"][1]["source"], "inline_comment")
+        self.assertEqual(ledger["findings"][1]["source"], "inline_thread")
         self.assertEqual(ledger["findings"][1]["location"], "src/module.py:42")
+
+    def test_extract_inline_findings_rest_groups_replies_under_root(self) -> None:
+        raw_rest_comments = [
+            {
+                "id": 101,
+                "path": "src/module.py",
+                "line": 42,
+                "user": {"login": "reviewer"},
+                "body": "Root comment.",
+                "in_reply_to_id": None,
+            },
+            {
+                "id": 102,
+                "path": "src/module.py",
+                "line": 42,
+                "user": {"login": "developer"},
+                "body": "Reply comment.",
+                "in_reply_to_id": 101,
+            },
+        ]
+        findings = frf.extract_inline_findings(raw_rest_comments)
+        # Should only emit 1 root finding, with reply grouped inside
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0]["id"], 101)
+        self.assertEqual(findings[0]["body"], "Root comment.")
+        self.assertEqual(len(findings[0]["replies"]), 1)
+        self.assertEqual(findings[0]["replies"][0]["id"], 102)
+        self.assertEqual(findings[0]["replies"][0]["body"], "Reply comment.")
 
     def test_render_markdown_ledger(self) -> None:
         ledger = frf.build_remediation_ledger(
@@ -102,6 +130,91 @@ class TestFetchReviewFindings(unittest.TestCase):
         self.assertIn("Off by one error here.", md)
         self.assertIn("Please fix boundary conditions.", md)
         self.assertIn("src/module.py:42", md)
+
+    def test_latest_review_reduced_correctly_with_subsequent_approval(self) -> None:
+        reviews = [
+            {
+                "id": 1,
+                "state": "CHANGES_REQUESTED",
+                "commit_id": "1111111111111111111111111111111111111111",
+                "user": {"login": "reviewer-user"},
+                "body": "Fix issues.",
+                "submitted_at": "2026-09-18T05:00:00Z",
+            },
+            {
+                "id": 2,
+                "state": "APPROVED",
+                "commit_id": "2222222222222222222222222222222222222222",
+                "user": {"login": "reviewer-user"},
+                "body": "Looks great now!",
+                "submitted_at": "2026-09-18T06:00:00Z",
+            },
+        ]
+        pr = dict(self.sample_pr, head={"ref": "feature/my-fix", "sha": "2222222222222222222222222222222222222222"})
+        ledger = frf.build_remediation_ledger(pr, reviews, [], [])
+        self.assertEqual(ledger["review_state"], "APPROVED")
+        self.assertEqual(ledger["reviewed_head"], "2222222222222222222222222222222222222222")
+
+    def test_stale_summary_head_rejected_or_flagged(self) -> None:
+        pr = dict(self.sample_pr, head={"ref": "feature/my-fix", "sha": "2222222222222222222222222222222222222222"})
+        reviews = [
+            {
+                "id": 2,
+                "state": "CHANGES_REQUESTED",
+                "commit_id": "2222222222222222222222222222222222222222",
+                "user": {"login": "reviewer-user"},
+                "body": "Still issues on new head.",
+                "submitted_at": "2026-09-18T06:00:00Z",
+            }
+        ]
+        # Issue comment has stale head 1111...
+        issue_comments = [
+            {
+                "id": 201,
+                "user": {"login": "reviewer-user"},
+                "body": "<!-- reviewer-summary:devils-advocate:1111111111111111111111111111111111111111 -->\nReview level: DEVILS_ADVOCATE\nVerdict: CHANGES_REQUESTED",
+                "created_at": "2026-09-18T05:00:00Z",
+            }
+        ]
+        ledger = frf.build_remediation_ledger(pr, reviews, [], issue_comments)
+        # Should bind to the current review commit or live head, NOT the stale summary
+        self.assertEqual(ledger["reviewed_head"], "2222222222222222222222222222222222222222")
+        self.assertTrue(ledger["summary"]["is_stale"])
+
+    def test_unresolved_primary_threads_filters_replies_and_resolved(self) -> None:
+        raw_threads = [
+            {
+                "id": "thread-resolved",
+                "isResolved": True,
+                "path": "src/resolved.py",
+                "line": 10,
+                "comments": {
+                    "nodes": [
+                        {"id": "c1", "body": "Already fixed.", "author": {"login": "rev"}}
+                    ]
+                },
+            },
+            {
+                "id": "thread-unresolved",
+                "isResolved": False,
+                "path": "src/bug.py",
+                "line": 20,
+                "comments": {
+                    "nodes": [
+                        {"id": "c2", "body": "Primary finding.", "author": {"login": "rev"}},
+                        {"id": "c3", "body": "Reply discussion.", "author": {"login": "dev"}},
+                    ]
+                },
+            },
+        ]
+        findings = frf.extract_thread_findings(raw_threads)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0]["id"], "c2")
+        self.assertEqual(findings[0]["path"], "src/bug.py")
+        self.assertEqual(findings[0]["line"], 20)
+        self.assertEqual(findings[0]["body"], "Primary finding.")
+        self.assertEqual(len(findings[0]["replies"]), 1)
+        self.assertEqual(findings[0]["replies"][0]["id"], "c3")
 
 
 if __name__ == "__main__":
