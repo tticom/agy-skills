@@ -12,6 +12,11 @@ The tickets are not a list of steps. They are a **task graph** with blocking rel
 
 Communication to and from subagents should be sparse. Communicate primarily through **context pointers**: to the spec, tickets, research notes, and previous commits. Don't duplicate information already available via pointers.
 
+For the initial job definition, use `$agy-skills:to-spec` to synthesize the
+approved conversation into a specification, then `$agy-skills:to-tickets` to
+turn it into a dependency-aware ticket graph. `implement-spec` consumes those
+artifacts; it does not invent product scope or replace the specification phase.
+
 **Implementer subagents** should be run in the background where possible for **maximum concurrency**.
 
 ## Steps
@@ -33,3 +38,34 @@ Communication to and from subagents should be sparse. Communicate primarily thro
 8. Mark the PR as ready for review.
 
 9. Clean up all **implementer subagent** worktrees.
+
+## Orca mode
+
+When the target repository uses Orca, treat the repository's executable
+authority and current live-state resolver as the control plane. The spec and
+ticket graph are planning input. Before dispatching a ticket, Orca must
+promote that ticket into its versioned authority and generate the bounded
+assignment from fresh live state. Pass workers only that assignment and the
+referenced prompt.
+
+In Orca mode, preserve these boundaries:
+
+- the job manifest may resolve the ready frontier but cannot authorise work;
+- a worker edits only its assigned worktree and ticket scope;
+- workers do not choose successors, change roles, review, approve, or merge;
+- the controller rereads live state after every worker return and before every
+  review or merge decision;
+- exact-head validation, independent review, governance, and merge-controller
+  policy remain in force.
+
+If the repository provides a deterministic spec-job resolver, run it before
+choosing the frontier. For Score2GP AgentOps the command is:
+
+```bash
+python3 scripts/agy_spec_job.py <job-manifest.yaml> --json
+```
+
+The resolver's output is a planning handoff to Orca, not a replacement for
+`ORCHESTRATION_STATE.json` or `score2gp_orca_control.py`. The current Score2GP
+policy remains one bounded task, one worker assignment, and one PR per cycle;
+do not silently turn the integration-branch concept into merge authority.
