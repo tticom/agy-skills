@@ -95,6 +95,13 @@ class ReviewerSkillContractTest(unittest.TestCase):
         self.assertIn("`APPROVE` is forbidden", basic)
         self.assertIn("do not hand back", implement)
 
+    def test_changes_requested_contract_enforces_remediation_rules(self):
+        changes_req = read("changes-requested/SKILL.md")
+        self.assertIn("Never amend or force-push", changes_req)
+        self.assertIn("Reproduce before fixing", changes_req)
+        self.assertIn("publish-pr-handback", changes_req)
+        self.assertIn("fetch_review_findings.py", changes_req)
+
 
 if __name__ == "__main__":
     unittest.main()
